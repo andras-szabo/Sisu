@@ -12,29 +12,31 @@ class SisuApp
 	friend class std::unique_ptr<SisuApp>;
 
 public:
+	SisuApp(HINSTANCE hInstance) : _hAppInstance(hInstance) {}
 	SisuApp(SisuApp&& other) = default;
 	SisuApp& operator=(SisuApp&& other) = default;
 
 	virtual ~SisuApp() {}
 
 protected:
-	SisuApp(HINSTANCE hInstance) : _hAppInstance(hInstance) {}
-	SisuApp(const SisuApp&) = delete;				// copy ctor, copy assignment: not allowed
+	SisuApp(const SisuApp&) = delete;								// copy ctor, copy assignment: not allowed
 	SisuApp& operator=(const SisuApp&) = delete;
 
 public:
 	HINSTANCE GetAppInstanceHandle() const { return _hAppInstance; }
 	HWND MainWindowHandle() const { return _windowManager->MainWindowHandle(); }
 	float AspectRatio() const { return _windowManager->AspectRatio(); }
-	bool IsRendererSetup() const { return _renderer->IsSetup(); }
+	bool IsRendererSetup() const { return _renderer != nullptr && _renderer->IsSetup(); }
 
 	virtual bool Init(int width, int height, const std::wstring& title);
 	virtual void Pause(bool newState);
 
+	int Run();
+
 protected:
 	virtual void OnResize();
-	virtual void Update(const GameTimer& gameTimer) = 0;
-	virtual void Draw(const GameTimer& gameTimer) = 0;
+	virtual void Update();
+	virtual void Draw();
 
 	virtual void OnMouseDown(WPARAM buttonState, int x, int y) {}
 	virtual void OnMouseUp(WPARAM buttonState, int x, int y) {}
@@ -46,6 +48,8 @@ protected:
 	bool InitGameTimer();
 	bool InitWindowManager(int width, int height, const std::wstring& title);
 	bool InitRenderer();
+
+	void CalculateFrameStats();
 
 protected:
 	HINSTANCE _hAppInstance = nullptr;

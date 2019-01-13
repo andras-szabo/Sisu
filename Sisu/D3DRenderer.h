@@ -38,7 +38,7 @@ public:
 	virtual bool IsSetup() const override { return _d3dDevice != nullptr; }
 
 protected:
-	virtual void OnResize();
+	virtual void OnResize() override;
 
 	void Init_00_CreateDXGIFactory();
 	void Init_01_CreateDevice();
@@ -55,8 +55,6 @@ protected:
 	void ResetCommandList();
 	void CloseAndExecuteCommandList();
 	void FlushCommandQueue();
-
-	void CalculateFrameStats();
 
 protected:
 	ID3D12Resource* CurrentBackBuffer() const;

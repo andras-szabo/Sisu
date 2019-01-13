@@ -83,25 +83,6 @@ void D3DRenderer::FlushCommandQueue()
 	}
 }
 
-void D3DRenderer::CalculateFrameStats()
-{
-	static int frameCount = 0;
-	static float elapsedTime = 0.0f;
-
-	frameCount++;
-	if (_gameTimer->SecondsSinceReset() - elapsedTime >= 1.0f)
-	{
-		auto fps = (float)frameCount;
-		auto msPerFrame = 1000.0f / fps;
-		auto fpsAsString = std::to_wstring(fps);
-		auto msPerFrameAsString = std::to_wstring(msPerFrame);
-		_windowManager->SetText(L"      fps: " + fpsAsString + L"    ms/frame: " + msPerFrameAsString);
-
-		frameCount = 0;
-		elapsedTime += 1.0f;
-	}
-}
-
 void D3DRenderer::OnResize()
 {
 	assert(_d3dDevice);
