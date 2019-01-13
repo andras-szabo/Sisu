@@ -38,7 +38,7 @@ public:
 
 	ArenaIterator<typename T> begin() 
 	{ 
-		auto firstIndex = _isUsed[0] ? 0 : GetNextValidIndex(0);
+		auto firstIndex = _actualSize > 0 ? (_isUsed[0] ? 0 : GetNextValidIndex(0)) : _end;
 		return ArenaIterator<T>(this, firstIndex);
 	}
 

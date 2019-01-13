@@ -77,6 +77,7 @@ int SisuApp::Run()
 
 void SisuApp::Update()
 {
+	_renderer->PreDraw();
 }
 
 void SisuApp::Draw()
