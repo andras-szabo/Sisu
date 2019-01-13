@@ -29,6 +29,29 @@ bool BrickRenderer::Init()
 	return true;
 }
 
+void BrickRenderer::PreDraw()
+{
+	WaitForNextFrameResource();
+	
+	if (_dirtyFrameCount > 0)
+	{
+		auto currentInstanceBuffer = _currentFrameResource->instanceBuffer.get();
+
+		UINT bufferIndex = 0;
+		for (const auto& brick : _bricks)
+		{
+			if (brick.isVisible)
+			{
+				DirectX::XMMATRIX worldMatrix = ToXMMatrix(brick.worldMatrix);
+				FRObjectConstants objConstants(worldMatrix);
+				currentInstanceBuffer->CopyData(bufferIndex++, objConstants);
+			}
+		}
+
+		_dirtyFrameCount--;
+	}
+}
+
 void BrickRenderer::Draw(GameTimer* gt)
 {
 	//TODO

@@ -58,12 +58,16 @@ protected:
 	void CloseAndExecuteCommandList();
 	void FlushCommandQueue();
 
+	void WaitForNextFrameResource();
+
 protected:
 	ID3D12Resource* CurrentBackBuffer() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
 	std::vector<std::unique_ptr<FrameResource>> _frameResources;
+	FrameResource* _currentFrameResource = nullptr;
+	int _currentFrameResourceIndex = 0;
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> _commandQueue;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> _commandAllocator;

@@ -36,7 +36,10 @@ bool SisuApp::InitWindowManager(int width, int height, const std::wstring& title
 
 bool SisuApp::InitRenderer()
 {
-	_renderer = std::make_unique<BrickRenderer>(_windowManager.get(), _gameTimer.get());
+	_renderer = std::make_unique<BrickRenderer>(_windowManager.get(), 
+												_gameTimer.get(),
+												_gameObjects.get(),
+												_bricks.get());
 	return _renderer->Init();
 }
 

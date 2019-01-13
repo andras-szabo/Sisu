@@ -2,8 +2,11 @@
 #include "D3DRenderer.h"
 #include "MathHelper.h"
 #include "GeometryGenerator.h"
+#include "Arena.h"
 
 class GameTimer;
+class GameObject;
+class Brick;
 
 struct BrickVertex
 {
@@ -16,12 +19,16 @@ class BrickRenderer : public D3DRenderer
 public:
 	static const UINT MaxInstancedObjectCount = 4096;
 
-	BrickRenderer(WindowManager* windowManager, GameTimer* gameTimer) :
-		D3DRenderer(windowManager, gameTimer)
+	BrickRenderer(WindowManager* windowManager, GameTimer* gameTimer, 
+		Arena<GameObject>* gameObjects, Arena<Brick>* bricks) :
+		D3DRenderer(windowManager, gameTimer),
+		_gameObjects (gameObjects),
+		_bricks (bricks)
 	{
 	}
 
 	virtual bool Init() override;
+	virtual void PreDraw() override;
 	virtual void Draw(GameTimer* gt) override;
 
 protected:
@@ -55,4 +62,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> _instancedRootSignature = nullptr;
 
 	PassConstants _mainPassCB;
+
+	Arena<GameObject>* _gameObjects;
+	Arena<Brick>* _bricks;
+	int _dirtyFrameCount = 0;
 };

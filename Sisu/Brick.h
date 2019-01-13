@@ -5,4 +5,5 @@ struct Brick
 {
 	Sisu::Matrix4 worldMatrix;
 	Sisu::Color color;
+	bool isVisible;
 };

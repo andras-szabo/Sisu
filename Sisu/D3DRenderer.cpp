@@ -349,3 +349,23 @@ void D3DRenderer::SetupViewport()
 
 	_scissorRect = { 0, 0, width, height };
 }
+
+void D3DRenderer::WaitForNextFrameResource()
+{
+	_currentFrameResourceIndex = (_currentFrameResourceIndex + 1) % FrameResourceCount;
+	_currentFrameResource = _frameResources[_currentFrameResourceIndex].get();
+
+	// Has the GPU finished processing the commands of the current
+	// frame resource? If not, wait until the GPU has completed commands
+	// up to this fence point.
+
+	if (_currentFrameResource->fence != 0 && _fence->GetCompletedValue() < _currentFrameResource->fence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(
+			_fence->SetEventOnCompletion(_currentFrameResource->fence, eventHandle)
+		);
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+}
