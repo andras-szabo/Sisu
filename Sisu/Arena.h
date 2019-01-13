@@ -1,5 +1,4 @@
 #pragma once
-
 #include <algorithm>
 #include <vector>
 #include <iostream>
@@ -18,15 +17,17 @@ struct Gap
 	}
 };
 
+template <typename T> struct ArenaIterator;
+
 template <typename T>
 class Arena
 {
 public:
-	Arena() : _actualSize(0)
+	Arena() : _actualSize(0), _begin(0), _end(0)
 	{
 	}
 
-	Arena(std::size_t reservedSize) : _actualSize(0)
+	Arena(std::size_t reservedSize) : _actualSize(0), _begin(0), _end(0)
 	{
 		_items.reserve(reservedSize);
 		_isUsed.reserve(reservedSize);
@@ -34,6 +35,9 @@ public:
 
 	T& operator[](std::size_t index) { ThrowIfNotUsed(index); return _items[index]; }
 	const T& operator[](std::size_t index) const { ThrowIfNotUsed(index); return _items[index]; }
+
+	ArenaIterator<typename T> begin() { return ArenaIterator<T>(this, GetNextValidIndex(0)); }
+	ArenaIterator<typename T> end() { return ArenaIterator<T>(this, _end); }
 
 	std::size_t Add(T item);
 	std::size_t Add(typename std::vector<T>::iterator begin,
@@ -46,6 +50,8 @@ public:
 	const std::size_t OccupiedSize() const { return _items.size(); }
 	const std::size_t ActualSize() const { return _actualSize; }
 
+	std::size_t GetNextValidIndex(std::size_t current) const;
+
 private:
 	bool TryFindBestFittingGap(std::size_t size, OUT std::size_t& placementIndex) const;
 	void RefreshGaps();
@@ -56,7 +62,23 @@ private:
 	std::vector<bool> _isUsed;
 	std::size_t _actualSize;
 	std::vector<Gap> _gaps;
+
+	std::size_t _begin;
+	std::size_t _end;
 };
+
+template <typename T>
+std::size_t Arena<T>::GetNextValidIndex(std::size_t current) const
+{
+	std::size_t nextValid = current + 1;
+
+	while (nextValid < _end && !_isUsed[nextValid])
+	{
+		nextValid++;
+	}
+
+	return nextValid;
+}
 
 template <typename T>
 void Arena<T>::PrintGaps() const
@@ -141,6 +163,7 @@ std::size_t Arena<T>::Add(T item)
 		_isUsed.push_back(true);
 
 		_actualSize++;
+		_end = _items.size();
 
 		return _items.size() - 1;
 	}
@@ -214,3 +237,35 @@ void Arena<T>::Remove(std::size_t index, std::size_t count)
 	RefreshGaps();
 }
 
+template <typename T>
+struct ArenaIterator
+{
+	ArenaIterator(Arena<T>* const arena, std::size_t index)
+		: arena(arena), index(index) {}
+
+	ArenaIterator& operator++()
+	{
+		index = arena->GetNextValidIndex(index);
+		return *this;
+	}
+
+	T& operator*()
+	{
+		return (*arena)[index];
+	}
+
+	std::size_t index;
+	Arena<T>* const arena;
+};
+
+template <typename T>
+bool operator==(const ArenaIterator<T>& a, const ArenaIterator<T>& b)
+{
+	return a.arena == b.arena && a.index == b.index;
+}
+
+template <typename T>
+bool operator!=(const ArenaIterator<T>& a, const ArenaIterator<T>& b)
+{
+	return !(a == b);
+}
