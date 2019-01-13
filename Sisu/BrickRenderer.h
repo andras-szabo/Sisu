@@ -20,9 +20,8 @@ public:
 	static const UINT MaxInstancedObjectCount = 4096;
 
 	BrickRenderer(WindowManager* windowManager, GameTimer* gameTimer, 
-		Arena<GameObject>* gameObjects, Arena<Brick>* bricks) :
+		Arena<Brick>* bricks) :
 		D3DRenderer(windowManager, gameTimer),
-		_gameObjects (gameObjects),
 		_bricks (bricks)
 	{
 	}
@@ -65,7 +64,6 @@ private:
 
 	PassConstants _mainPassCB;
 
-	Arena<GameObject>* _gameObjects;
 	Arena<Brick>* _bricks;
 	int _dirtyFrameCount = 0;
 };
