@@ -5,6 +5,9 @@
 #include "WindowManager.h"
 #include "GameTimer.h"
 #include "IRenderer.h"
+#include "Arena.h"
+#include "GameObject.h"
+#include "Brick.h"
 
 class SisuApp
 {
@@ -12,6 +15,9 @@ class SisuApp
 	friend class std::unique_ptr<SisuApp>;
 
 public:
+	const static std::size_t MaxGameObjectCount = 1024;
+	const static std::size_t MaxBrickCount = 4096;
+
 	SisuApp(HINSTANCE hInstance) : _hAppInstance(hInstance) {}
 	SisuApp(SisuApp&& other) = default;
 	SisuApp& operator=(SisuApp&& other) = default;
@@ -45,6 +51,7 @@ protected:
 	virtual void OnKeyDown(WPARAM virtualKeyCode) {}
 	virtual void OnKeyUp(WPARAM virtualKeyCode) {}
 
+	bool InitArenas();
 	bool InitGameTimer();
 	bool InitWindowManager(int width, int height, const std::wstring& title);
 	bool InitRenderer();
@@ -54,9 +61,12 @@ protected:
 protected:
 	HINSTANCE _hAppInstance = nullptr;
 
+	std::unique_ptr<Arena<GameObject>> _gameObjects;
+	std::unique_ptr<Arena<Brick>> _bricks;
+
 	std::unique_ptr<GameTimer> _gameTimer;
 	std::unique_ptr<WindowManager> _windowManager;
 	std::unique_ptr<IRenderer> _renderer;
 
-	bool _isRendererSetup;
+	bool _isRendererSetup = false;
 };

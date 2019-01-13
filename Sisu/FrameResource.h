@@ -4,7 +4,7 @@
 #include "MathHelper.h"
 #include "UploadBuffer.h"
 
-struct FRObjectConstants	// FR, as in, Frame Resource, to not confuse this with e.g. BoxApp::ObjectConstants
+struct FRObjectConstants
 {
 	FRObjectConstants(const DirectX::XMMATRIX& worldMatrixToInit)
 	{

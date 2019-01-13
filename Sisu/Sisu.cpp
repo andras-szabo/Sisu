@@ -6,11 +6,20 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 {
 	auto success = true;
 
+	success &= InitArenas();
 	success &= InitGameTimer();
 	success &= InitWindowManager(width, height, title);
 	success &= InitRenderer();
 
 	return success;
+}
+
+bool SisuApp::InitArenas()
+{
+	_gameObjects = std::make_unique<Arena<GameObject>>(MaxGameObjectCount);
+	_bricks = std::make_unique<Arena<Brick>>(MaxBrickCount);
+
+	return _gameObjects != nullptr && _bricks != nullptr;
 }
 
 bool SisuApp::InitGameTimer()
