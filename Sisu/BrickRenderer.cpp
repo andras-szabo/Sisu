@@ -38,7 +38,7 @@ void BrickRenderer::PreDraw()
 		auto currentInstanceBuffer = _currentFrameResource->instanceBuffer.get();
 
 		UINT bufferIndex = 0;
-		for (const auto& brick : *_bricks)
+		for (auto& brick : *_bricks)
 		{
 			if (brick.isVisible)
 			{
