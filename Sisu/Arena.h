@@ -36,7 +36,12 @@ public:
 	T& operator[](std::size_t index) { ThrowIfNotUsed(index); return _items[index]; }
 	const T& operator[](std::size_t index) const { ThrowIfNotUsed(index); return _items[index]; }
 
-	ArenaIterator<typename T> begin() { return ArenaIterator<T>(this, GetNextValidIndex(0)); }
+	ArenaIterator<typename T> begin() 
+	{ 
+		auto firstIndex = _isUsed[0] ? 0 : GetNextValidIndex(0);
+		return ArenaIterator<T>(this, firstIndex);
+	}
+
 	ArenaIterator<typename T> end() { return ArenaIterator<T>(this, _end); }
 
 	std::size_t Add(T item);
