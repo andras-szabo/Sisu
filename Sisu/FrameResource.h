@@ -49,7 +49,11 @@ struct FrameResource
 
 		// ddevice*, count, isConstantBuffer
 		passConstantBuffer = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
-		objectConstantBuffer = std::make_unique<UploadBuffer<FRObjectConstants>>(device, cbObjectCount, true);
+
+		if (cbObjectCount > 0)
+		{
+			objectConstantBuffer = std::make_unique<UploadBuffer<FRObjectConstants>>(device, cbObjectCount, true);
+		}
 
 		instanceBuffer = std::make_unique<UploadBuffer<FRObjectConstants>>(device, maxInstancedObjectCount, false);
 	}
