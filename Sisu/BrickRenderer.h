@@ -65,5 +65,5 @@ private:
 	PassConstants _mainPassCB;
 
 	Arena<Brick>* _bricks;
-	int _dirtyFrameCount = 0;
+	int _dirtyFrameCount = FrameResourceCount;
 };
