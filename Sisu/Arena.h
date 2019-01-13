@@ -102,6 +102,7 @@ void Arena<T>::Clear()
 	_isUsed.clear();
 	_gaps.clear();
 	_actualSize = 0;
+	_end = 0;
 }
 
 template <typename T>
