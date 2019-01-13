@@ -18,6 +18,6 @@ namespace Sisu
 
 	struct Matrix4
 	{
-		Vector4 row0, row1, row2, row3;
+		Vector4 r0, r1, r2, r3;
 	};
 }

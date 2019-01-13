@@ -3,10 +3,10 @@
 #include "MathHelper.h"
 #include "GeometryGenerator.h"
 #include "Arena.h"
+#include "Brick.h"
 
 class GameTimer;
 class GameObject;
-class Brick;
 
 struct BrickVertex
 {
@@ -47,6 +47,8 @@ private:
 		std::vector<BrickVertex>& vertices,
 		UINT startIndex,
 		DirectX::XMFLOAT4 color) const;
+
+	DirectX::XMMATRIX ToXMMatrix(const Sisu::Matrix4& matrix) const;
 
 private:
 	DirectX::XMFLOAT3 _eyePos = { 0.0f, 0.0f, 0.0f };

@@ -38,7 +38,7 @@ void BrickRenderer::PreDraw()
 		auto currentInstanceBuffer = _currentFrameResource->instanceBuffer.get();
 
 		UINT bufferIndex = 0;
-		for (const auto& brick : _bricks)
+		for (const auto& brick : *_bricks)
 		{
 			if (brick.isVisible)
 			{
@@ -112,6 +112,17 @@ void BrickRenderer::BuildRootSignatures()
 		serializedRS->GetBufferSize(),
 		IID_PPV_ARGS(_instancedRootSignature.GetAddressOf()))
 	);
+}
+
+DirectX::XMMATRIX BrickRenderer::ToXMMatrix(const Sisu::Matrix4& m) const
+{
+	//TODO - we could probably optimize this.
+	DirectX::XMFLOAT4X4 xm(m.r0.x, m.r0.y, m.r0.z, m.r0.w,
+						   m.r1.x, m.r1.y, m.r1.z, m.r1.w,
+						   m.r2.x, m.r2.y, m.r2.z, m.r2.w,
+						   m.r3.x, m.r3.y, m.r3.z, m.r3.w);
+	
+	return DirectX::XMLoadFloat4x4(&xm);
 }
 
 void BrickRenderer::BuildShapeGeometry()
