@@ -17,11 +17,13 @@
 #include <DirectXColors.h>
 #include "WindowManager.h"
 #include "GameTimer.h"
+#include "FrameResource.h"
 
 class D3DRenderer : public IRenderer
 {
 public:
 	static const int SwapChainBufferCount = 2;
+	static const int FrameResourceCount = 3;
 
 	D3DRenderer(WindowManager* windowManager, GameTimer* gameTimer) :
 		_windowManager(windowManager),
@@ -60,6 +62,8 @@ protected:
 	ID3D12Resource* CurrentBackBuffer() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+
+	std::vector<std::unique_ptr<FrameResource>> _frameResources;
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> _commandQueue;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> _commandAllocator;

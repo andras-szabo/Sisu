@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Sisu.h"
-#include "D3DRenderer.h"
+#include "BrickRenderer.h"
 
 bool SisuApp::Init(int width, int height, const std::wstring& title)
 {
@@ -27,7 +27,7 @@ bool SisuApp::InitWindowManager(int width, int height, const std::wstring& title
 
 bool SisuApp::InitRenderer()
 {
-	_renderer = std::make_unique<D3DRenderer>(_windowManager.get(), _gameTimer.get());
+	_renderer = std::make_unique<BrickRenderer>(_windowManager.get(), _gameTimer.get());
 	return _renderer->Init();
 }
 
@@ -70,6 +70,7 @@ void SisuApp::Update()
 
 void SisuApp::Draw()
 {
+	_renderer->Draw(_gameTimer.get());
 }
 
 void SisuApp::Pause(bool newState)
