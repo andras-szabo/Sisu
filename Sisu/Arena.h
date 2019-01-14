@@ -48,7 +48,7 @@ public:
 	std::size_t Add(typename std::vector<T>::iterator begin,
 		typename std::vector<T>::iterator end);
 
-	void Remove(std::size_t index, std::size_t count = 1);
+	void RemoveAt(std::size_t index, std::size_t count = 1);
 	void Clear();
 
 	void PrintGaps() const;
@@ -143,6 +143,8 @@ std::size_t Arena<T>::Add(typename std::vector<T>::iterator begin,
 			begin++;
 			_actualSize++;
 		}
+
+		_end = _items.size();
 	}
 
 	return placementIndex;
@@ -232,7 +234,7 @@ void Arena<T>::RefreshGaps()
 }
 
 template <typename T>
-void Arena<T>::Remove(std::size_t index, std::size_t count)
+void Arena<T>::RemoveAt(std::size_t index, std::size_t count)
 {
 	for (int i = 0; i < count && (index + i) < _isUsed.size(); ++i)
 	{
