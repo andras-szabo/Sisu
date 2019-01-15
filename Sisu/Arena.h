@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <iostream>
+#include <limits>
 
 #define OUT 
 
@@ -22,6 +23,8 @@ template <typename T> struct ArenaIterator;
 template <typename T>
 class Arena
 {
+	friend struct ArenaIterator<T>;
+
 public:
 	Arena() : _actualSize(0), _begin(0), _end(0)
 	{
@@ -51,13 +54,15 @@ public:
 	void RemoveAt(std::size_t index, std::size_t count = 1);
 	void Clear();
 
+	std::size_t GetStartIndexForGap(std::size_t requestedGapSize,
+									std::size_t preferredLocationIndex) const;
+
 	void PrintGaps() const;
 	const std::size_t OccupiedSize() const { return _items.size(); }
 	const std::size_t ActualSize() const { return _actualSize; }
 
-	std::size_t GetNextValidIndex(std::size_t current) const;
-
 private:
+	std::size_t GetNextValidIndex(std::size_t current) const;
 	bool TryFindBestFittingGap(std::size_t size, OUT std::size_t& placementIndex) const;
 	void RefreshGaps();
 	void ThrowIfNotUsed(std::size_t index) const;
@@ -71,6 +76,46 @@ private:
 	std::size_t _begin;
 	std::size_t _end;
 };
+
+template <typename T>
+std::size_t Arena<T>::GetStartIndexForGap(std::size_t requestedGapSize, 
+										  std::size_t preferredLocationIndex) const
+{
+	if (OccupiedSize() == 0) { return 0; }
+
+	std::size_t gapStartIndex = _end;
+	auto distance = INT_MAX;
+	auto foundSuitableGap = false;
+
+	for (const auto& gap : _gaps)
+	{
+		if (gap.size >= requestedGapSize)
+		{
+			foundSuitableGap = true;
+			auto currDistance = gap.startIndex > preferredLocationIndex ? gap.startIndex - preferredLocationIndex
+				: preferredLocationIndex - gap.startIndex;
+
+			if (currDistance < distance)
+			{
+				distance = currDistance;
+				gapStartIndex = gap.startIndex;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	if (foundSuitableGap) { return gapStartIndex; }
+
+	while (gapStartIndex > 0 && !_isUsed[gapStartIndex - 1])
+	{
+		gapStartIndex--;
+	}
+
+	return gapStartIndex;
+}
 
 template <typename T>
 std::size_t Arena<T>::GetNextValidIndex(std::size_t current) const
@@ -236,7 +281,7 @@ void Arena<T>::RefreshGaps()
 template <typename T>
 void Arena<T>::RemoveAt(std::size_t index, std::size_t count)
 {
-	for (int i = 0; i < count && (index + i) < _isUsed.size(); ++i)
+	for (std::size_t i = 0; i < count && (index + i) < _isUsed.size(); ++i)
 	{
 		_isUsed[index + i] = false;
 	}

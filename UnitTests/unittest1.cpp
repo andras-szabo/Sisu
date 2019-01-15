@@ -9,6 +9,25 @@ namespace UnitTests
 	TEST_CLASS(ArenaTests)
 	{
 	public:
+
+		TEST_METHOD(GetSuitableRange)
+		{
+			Arena<int> a(10);
+			Assert::IsTrue(a.GetStartIndexForGap(5, 0) == 0);
+
+			for (int i = 0; i < 10; ++i) { a.Add(i); }
+
+			Assert::IsTrue(a.GetStartIndexForGap(2, 5) == 10);
+
+			a.RemoveAt(1, 2);
+			a.RemoveAt(8, 2);	// 0, _, _, 3, 4, 5, 6, 7, _, _
+
+			Assert::IsTrue(a.GetStartIndexForGap(2, 0) == 1, L"first");
+			Assert::IsTrue(a.GetStartIndexForGap(2, 6) == 8, L"second");
+			Assert::IsTrue(a.GetStartIndexForGap(3, 3) == 8, L"third");
+			Assert::IsTrue(a.GetStartIndexForGap(1, 3) == 1, L"fourth");
+			Assert::IsTrue(a.GetStartIndexForGap(10, 5) == 8, L"fifth");
+		}
 		
 		TEST_METHOD(CreateArena)
 		{
