@@ -47,9 +47,10 @@ public:
 
 	ArenaIterator<typename T> end() { return ArenaIterator<T>(this, _end); }
 
-	std::size_t Add(T item);
-	std::size_t Add(typename std::vector<T>::iterator begin,
+	std::size_t AddAnywhere(T item);
+	std::size_t AddAnywhere(typename std::vector<T>::iterator begin,
 		typename std::vector<T>::iterator end);
+	void AddAt(std::size_t index, T item);
 
 	void RemoveAt(std::size_t index, std::size_t count = 1);
 	void Clear();
@@ -59,7 +60,7 @@ public:
 
 	void PrintGaps() const;
 	const std::size_t OccupiedSize() const { return _items.size(); }
-	const std::size_t ActualSize() const { return _actualSize; }
+	const std::size_t ItemCount() const { return _actualSize; }
 
 private:
 	std::size_t GetNextValidIndex(std::size_t current) const;
@@ -87,18 +88,33 @@ std::size_t Arena<T>::GetStartIndexForGap(std::size_t requestedGapSize,
 	auto distance = INT_MAX;
 	auto foundSuitableGap = false;
 
+	//TODO: Smarter gap finding:
+	//		what if : 0, _, _, _, _, 5, 6, 7, _   => and we're looking for a gap of size one close to "5"?
+	//		Right now we'd return "8", but it would be better to put the thing at 4. => so factor in the
+	//		gap start and end, not only gap start.
+
 	for (const auto& gap : _gaps)
 	{
 		if (gap.size >= requestedGapSize)
 		{
 			foundSuitableGap = true;
-			auto currDistance = gap.startIndex > preferredLocationIndex ? gap.startIndex - preferredLocationIndex
-				: preferredLocationIndex - gap.startIndex;
+
+			// get distance to gap start as well to gap end, use the smaller one
+			// if using gap end, calc gap start by gap end - gap size
+
+			auto gapStart = gap.startIndex;
+			auto gapEnd = gap.startIndex + gap.size;
+
+			auto distToStart = gapStart > preferredLocationIndex ? gapStart - preferredLocationIndex : preferredLocationIndex - gapStart;
+			auto distToEnd = gapEnd > preferredLocationIndex ? gapEnd - preferredLocationIndex : preferredLocationIndex - gapEnd;
+			auto useDistanceToStart = distToStart <= distToEnd;
+			
+			auto currDistance = useDistanceToStart ? distToStart : distToEnd;
 
 			if (currDistance < distance)
 			{
 				distance = currDistance;
-				gapStartIndex = gap.startIndex;
+				gapStartIndex = useDistanceToStart ? gapStart : gapEnd - requestedGapSize;
 			}
 		}
 		else
@@ -156,7 +172,7 @@ void Arena<T>::Clear()
 }
 
 template <typename T>
-std::size_t Arena<T>::Add(typename std::vector<T>::iterator begin,
+std::size_t Arena<T>::AddAnywhere(typename std::vector<T>::iterator begin,
 	typename std::vector<T>::iterator end)
 {
 	std::size_t placementIndex;
@@ -196,7 +212,27 @@ std::size_t Arena<T>::Add(typename std::vector<T>::iterator begin,
 }
 
 template <typename T>
-std::size_t Arena<T>::Add(T item)
+void Arena<T>::AddAt(std::size_t index, T item)
+{
+	if (index < _end)
+	{
+		_items[index] = item;
+		_isUsed[index] = true;
+		_actualSize++;
+		RefreshGaps();
+	}
+	else
+	{
+		if (index > _end) { throw std::runtime_error("[Arena] Trying to place items into an arena past its end."); }
+		_items.push_back(item);
+		_isUsed.push_back(true);
+		_actualSize++;
+		_end = _items.size();
+	}
+}
+
+template <typename T>
+std::size_t Arena<T>::AddAnywhere(T item)
 {
 	std::size_t placementIndex;
 	if (TryFindBestFittingGap(1, OUT placementIndex))
