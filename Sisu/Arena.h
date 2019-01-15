@@ -88,11 +88,6 @@ std::size_t Arena<T>::GetStartIndexForGap(std::size_t requestedGapSize,
 	auto distance = INT_MAX;
 	auto foundSuitableGap = false;
 
-	//TODO: Smarter gap finding:
-	//		what if : 0, _, _, _, _, 5, 6, 7, _   => and we're looking for a gap of size one close to "5"?
-	//		Right now we'd return "8", but it would be better to put the thing at 4. => so factor in the
-	//		gap start and end, not only gap start.
-
 	for (const auto& gap : _gaps)
 	{
 		if (gap.size >= requestedGapSize)
