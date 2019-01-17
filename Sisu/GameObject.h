@@ -15,32 +15,37 @@ public:
 
 	static std::size_t AddChild(Arena<GameObject>& arena, std::size_t parentIndex, GameObject child)
 	{
-		auto& parent = arena[parentIndex];
-
-		if (!parent.hasChildren)
+		if (!arena[parentIndex].hasChildren)
 		{
 			auto childIndex = arena.GetStartIndexForGap(1, parentIndex);
 			arena.AddAt(childIndex, child);
+			arena[childIndex].index = childIndex;
+
+			auto& parent = arena[parentIndex];
+
+			parent.hasChildren = true;
 			parent.childrenStartIndex = childIndex;
 			parent.childrenEndIndex = childIndex;
+
 			arena[childIndex].parentIndex = parentIndex;
-			parent.hasChildren = true;
+
 			return childIndex;
 		}
 
 		// Check the slot after last child of parent. If empty,
 		// push the thing there.
-
-		if (arena.CanAddItemAt(parent.childrenEndIndex + 1))
+		if (arena.CanAddItemAt(arena[parentIndex].childrenEndIndex + 1))
 		{
-			auto childIndex = parent.childrenEndIndex + 1;
+			auto childIndex = arena[parentIndex].childrenEndIndex + 1;
 			arena.AddAt(childIndex, child);
-			parent.childrenEndIndex = childIndex;
+			arena[childIndex].index = childIndex;
+			arena[parentIndex].childrenEndIndex = childIndex;
 			arena[childIndex].parentIndex = parentIndex;
 			return childIndex;
 		}
 
 		// We have to relocate all kids, including the new one
+		auto& parent = arena[parentIndex];
 		auto existingKidCount = parent.childrenEndIndex - parent.childrenStartIndex + 1;
 		auto childrenCount = existingKidCount + 1;
 		auto gapStartIndex = arena.GetStartIndexForGap(childrenCount, parentIndex);
@@ -63,13 +68,15 @@ public:
 		arena[newKidsIndex].parentIndex = parentIndex;
 
 		// Then set up the parent
-		parent.childrenStartIndex = gapStartIndex;
-		parent.childrenEndIndex = newKidsIndex;
+		arena[parentIndex].childrenStartIndex = gapStartIndex;
+		arena[parentIndex].childrenEndIndex = newKidsIndex;
 
 		return 0;
 	}
 
 	//TODO: make sure we know when we're making copies
+	GameObject() = default;
+	GameObject(const GameObject& other) = default;
 
 public:
 	std::size_t index;

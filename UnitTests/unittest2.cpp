@@ -22,7 +22,7 @@ namespace UnitTests
 
 		TEST_METHOD(AddChild)
 		{
-			Arena<GameObject> a(10);
+			Arena<GameObject> a;
 			auto parentIndex = GameObject::AddToArena(a, GameObject());
 			auto childIndex = GameObject::AddChild(a, parentIndex, GameObject());
 
@@ -32,12 +32,14 @@ namespace UnitTests
 			const auto& parent = a[parentIndex];
 			const auto& child = a[childIndex];
 
+			Assert::IsTrue(parent.hasChildren);
+
 			Assert::IsTrue(parent.hasChildren && parent.childrenStartIndex == childIndex && parent.childrenEndIndex == childIndex);
 			Assert::IsTrue(child.parentIndex == parentIndex);
 
 			auto otherChild = GameObject::AddChild(a, parentIndex, GameObject());
 			Assert::IsTrue(otherChild == 2);
-			Assert::IsTrue(parent.childrenStartIndex == 1 && parent.childrenEndIndex == 2);
+			Assert::IsTrue(a[parentIndex].childrenStartIndex == 1 && a[parentIndex].childrenEndIndex == 2);
 			Assert::IsTrue(a[otherChild].parentIndex == parentIndex);
 
 			// So now, in the arena, we have:
@@ -51,7 +53,7 @@ namespace UnitTests
 			auto newGOindex = GameObject::AddToArena(a, GameObject());
 			Assert::IsTrue(newGOindex == 3);
 			auto thirdChild = GameObject::AddChild(a, parentIndex, GameObject());
-			Assert::IsTrue(parent.childrenStartIndex == 4 && parent.childrenEndIndex == 6);
+			Assert::IsTrue(a[parentIndex].childrenStartIndex == 4 && a[parentIndex].childrenEndIndex == 6);
 			Assert::IsTrue(a[4].parentIndex == parentIndex && a[5].parentIndex == parentIndex && a[6].parentIndex == parentIndex);
 			Assert::IsTrue(a.CanAddItemAt(1) && a.CanAddItemAt(2));
 
@@ -66,6 +68,9 @@ namespace UnitTests
 
 		TEST_METHOD(AddChildren)
 		{
+			Arena<GameObject> a(10);
+			auto parentIndex = GameObject::AddToArena(a, GameObject());
+			Assert::IsTrue(parentIndex == 0);
 
 		}
 	};
