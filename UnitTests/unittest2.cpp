@@ -68,10 +68,41 @@ namespace UnitTests
 
 		TEST_METHOD(AddChildren)
 		{
-			Arena<GameObject> a(10);
+			Arena<GameObject> a;
 			auto parentIndex = GameObject::AddToArena(a, GameObject());
 			Assert::IsTrue(parentIndex == 0);
 
+			std::vector<GameObject> children;
+			for (int i = 0; i < 4; ++i)
+			{
+				children.push_back(GameObject());
+			}
+
+			auto childCount = (children.end() - children.begin());
+
+			auto firstChildIndex = GameObject::AddChildren(a, parentIndex, children.begin(), children.end());
+			Assert::IsTrue(firstChildIndex == 1);
+			Assert::IsTrue(a[parentIndex].hasChildren); 
+			Assert::IsTrue(a[parentIndex].childrenStartIndex == firstChildIndex && a[parentIndex].childrenEndIndex == firstChildIndex + 3);
+
+			for (int i = 0; i < 4; ++i)
+			{
+				Assert::IsTrue(a[firstChildIndex + i].parentIndex == parentIndex);
+			}
+
+			std::vector<GameObject> newKids;
+			for (int i = 0; i < 2; ++i)
+			{
+				newKids.push_back(GameObject());
+			}
+
+			childCount = newKids.end() - newKids.begin();
+			firstChildIndex = GameObject::AddChildren(a, parentIndex, newKids.begin(), newKids.end());
+			Assert::IsTrue(firstChildIndex == 1);
+			Assert::IsTrue(a[parentIndex].hasChildren);
+			Assert::IsTrue(a[parentIndex].childrenStartIndex == firstChildIndex && a[parentIndex].childrenEndIndex == firstChildIndex + 5);
+
+			//TODO: Test when relocating kids
 		}
 	};
 }

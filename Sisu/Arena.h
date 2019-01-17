@@ -50,8 +50,13 @@ public:
 	std::size_t AddAnywhere(T item);
 	std::size_t AddAnywhere(typename std::vector<T>::iterator begin,
 		typename std::vector<T>::iterator end);
+
 	void AddAt(std::size_t index, T item);
+	void AddAt(std::size_t index, typename std::vector<T>::iterator begin,
+		typename std::vector<T>::iterator end);
+
 	bool CanAddItemAt(std::size_t index) const;
+	bool CanAddItemsAt(std::size_t index, std::size_t count) const;
 
 	void RemoveAt(std::size_t index, std::size_t count = 1);
 	void Clear();
@@ -83,6 +88,23 @@ template <typename T>
 bool Arena<T>::CanAddItemAt(std::size_t index) const
 {
 	return (index < _end && !_isUsed[index]) || index == _end;
+}
+
+template <typename T>
+bool Arena<T>::CanAddItemsAt(std::size_t index, std::size_t count) const
+{
+	if (index == _end) { return true; }
+
+	auto canAddItems = true;
+	for (std::size_t i = 0; i < count && index + i < _end; ++i)
+	{
+		if (_isUsed[index + i])
+		{
+			canAddItems = false;
+		}
+	}
+
+	return canAddItems;
 }
 
 template <typename T>
@@ -211,6 +233,16 @@ std::size_t Arena<T>::AddAnywhere(typename std::vector<T>::iterator begin,
 	}
 
 	return placementIndex;
+}
+
+template <typename T>
+void Arena<T>::AddAt(std::size_t index, typename std::vector<T>::iterator begin, typename std::vector<T>::iterator end)
+{
+	while (begin != end)
+	{
+		AddAt(index++, *begin);
+		begin++;
+	}
 }
 
 template <typename T>

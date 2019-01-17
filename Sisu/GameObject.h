@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <vector>
 #include "SisuUtilities.h"
 #include "Arena.h"
 
@@ -11,6 +12,50 @@ public:
 		auto index = arena.AddAnywhere(go);
 		arena[index].index = index;
 		return index;
+	}
+
+	static std::size_t AddChildren(Arena<GameObject>& arena, std::size_t parentIndex,
+		std::vector<GameObject>::iterator begin,
+		std::vector<GameObject>::iterator end)
+	{
+		std::size_t newChildrenCount = end - begin;
+		if (!arena[parentIndex].hasChildren)
+		{
+			auto firstChildIndex = arena.GetStartIndexForGap(newChildrenCount, parentIndex);
+			arena.AddAt(firstChildIndex, begin, end);
+
+			arena[parentIndex].hasChildren = true;
+			arena[parentIndex].childrenStartIndex = firstChildIndex;
+			arena[parentIndex].childrenEndIndex = firstChildIndex + newChildrenCount - 1;
+			
+			for (auto i = 0; i < newChildrenCount; ++i)
+			{
+				arena[firstChildIndex + i].index = firstChildIndex + i;
+				arena[firstChildIndex + i].parentIndex = parentIndex;
+			}
+
+			return firstChildIndex;
+		}
+
+		// Check the slot after the first kids; if OK, put them there.
+		if (arena.CanAddItemsAt(arena[parentIndex].childrenEndIndex + 1, newChildrenCount))
+		{
+			auto firstChildIndex = arena[parentIndex].childrenEndIndex + 1;
+			arena.AddAt(firstChildIndex, begin, end);
+
+			arena[parentIndex].hasChildren = true;
+			arena[parentIndex].childrenEndIndex = firstChildIndex + newChildrenCount - 1;
+
+			for (auto i = 0; i < newChildrenCount; ++i)
+			{
+				arena[firstChildIndex + i].index = firstChildIndex + i;
+				arena[firstChildIndex + i].parentIndex = parentIndex;
+			}
+
+			return arena[parentIndex].childrenStartIndex;
+		}
+
+		return 99;
 	}
 
 	static std::size_t AddChild(Arena<GameObject>& arena, std::size_t parentIndex, GameObject child)
@@ -57,6 +102,13 @@ public:
 			auto newIndex = gapStartIndex + i;
 			arena.AddAt(newIndex, arena[fromIndex + i]);
 			arena[newIndex].index = newIndex;
+			if (arena[newIndex].hasChildren)
+			{
+				for (std::size_t j = arena[newIndex].childrenStartIndex; j < arena[newIndex].childrenEndIndex; ++j)
+				{
+					arena[j].parentIndex = newIndex;
+				}
+			}
 		}
 
 		arena.RemoveAt(fromIndex, existingKidCount);
@@ -79,6 +131,7 @@ public:
 	GameObject(const GameObject& other) = default;
 
 public:
+	//TODO - do we actually need index here? why?
 	std::size_t index;
 	std::size_t childrenStartIndex, childrenEndIndex;
 	std::size_t parentIndex;
