@@ -3,7 +3,7 @@
 #include "MathHelper.h"
 #include "GeometryGenerator.h"
 #include "Arena.h"
-#include "Brick.h"
+#include "GameObject.h"
 
 class GameTimer;
 class GameObject;
@@ -20,7 +20,7 @@ public:
 	static const UINT MaxInstancedObjectCount = 4096;
 
 	BrickRenderer(WindowManager* windowManager, GameTimer* gameTimer, 
-		Arena<Brick>* bricks) :
+		Arena<GameObject>* bricks) :
 		D3DRenderer(windowManager, gameTimer),
 		_bricks (bricks)
 	{
@@ -64,6 +64,6 @@ private:
 
 	PassConstants _mainPassCB;
 
-	Arena<Brick>* _bricks;
+	Arena<GameObject>* _bricks;
 	int _dirtyFrameCount = FrameResourceCount;
 };

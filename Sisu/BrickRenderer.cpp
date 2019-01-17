@@ -42,7 +42,7 @@ void BrickRenderer::PreDraw()
 		{
 			if (brick.isVisible)
 			{
-				DirectX::XMMATRIX worldMatrix = ToXMMatrix(brick.worldMatrix);
+				DirectX::XMMATRIX worldMatrix = ToXMMatrix(brick.transform);
 				FRObjectConstants objConstants(worldMatrix);
 				currentInstanceBuffer->CopyData(bufferIndex++, objConstants);
 			}

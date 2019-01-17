@@ -148,7 +148,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Arena.h" />
-    <ClInclude Include="Brick.h" />
     <ClInclude Include="BrickRenderer.h" />
     <ClInclude Include="D3DLogger.h" />
     <ClInclude Include="D3DRenderer.h" />

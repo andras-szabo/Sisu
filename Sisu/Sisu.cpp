@@ -17,9 +17,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 bool SisuApp::InitArenas()
 {
 	_gameObjects = std::make_unique<Arena<GameObject>>(MaxGameObjectCount);
-	_bricks = std::make_unique<Arena<Brick>>(MaxBrickCount);
-
-	return _gameObjects != nullptr && _bricks != nullptr;
+	return _gameObjects != nullptr;
 }
 
 bool SisuApp::InitGameTimer()
@@ -38,7 +36,7 @@ bool SisuApp::InitRenderer()
 {
 	_renderer = std::make_unique<BrickRenderer>(_windowManager.get(), 
 												_gameTimer.get(),
-												_bricks.get());
+												_gameObjects.get());
 	return _renderer->Init();
 }
 
