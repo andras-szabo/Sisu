@@ -51,6 +51,7 @@ public:
 	std::size_t AddAnywhere(typename std::vector<T>::iterator begin,
 		typename std::vector<T>::iterator end);
 	void AddAt(std::size_t index, T item);
+	bool CanAddItemAt(std::size_t index) const;
 
 	void RemoveAt(std::size_t index, std::size_t count = 1);
 	void Clear();
@@ -77,6 +78,12 @@ private:
 	std::size_t _begin;
 	std::size_t _end;
 };
+
+template <typename T>
+bool Arena<T>::CanAddItemAt(std::size_t index) const
+{
+	return (index < _end && !_isUsed[index]) || index == _end;
+}
 
 template <typename T>
 std::size_t Arena<T>::GetStartIndexForGap(std::size_t requestedGapSize, 
