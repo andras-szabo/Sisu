@@ -101,7 +101,44 @@ namespace UnitTests
 			Assert::IsTrue(a[parentIndex].childrenEndIndex == 11);
 		}
 
-		//TODO: Tests w/ hierarchies
+		TEST_METHOD(Hierarchies01)
+		{
+			Arena<GameObject> a;
+			auto grandParentIndex = GameObject::AddToArena(a, GameObject());
+			auto parentIndex = GameObject::AddChild(a, grandParentIndex, GameObject());
+			auto childIndex = GameObject::AddChild(a, parentIndex, GameObject());
+
+			Assert::IsTrue(a[grandParentIndex].hasChildren && 
+						   a[grandParentIndex].childrenStartIndex == parentIndex && 
+						   a[grandParentIndex].childrenEndIndex == parentIndex);
+
+			Assert::IsTrue(a[parentIndex].hasChildren);
+			Assert::IsTrue(a[parentIndex].childrenStartIndex == childIndex);
+			Assert::IsTrue(a[parentIndex].childrenEndIndex == childIndex);
+		}
+
+		TEST_METHOD(Hierarchies02)
+		{
+			Arena<GameObject> a;
+			auto grandParentIndex = GameObject::AddToArena(a, GameObject());
+			auto parentIndex = GameObject::AddChild(a, grandParentIndex, GameObject());
+			auto childIndex = GameObject::AddChild(a, parentIndex, GameObject());
+
+			// grandparent, parent, child
+			// now add one kid to grandpa. expected:
+			// grandpa, ___, child, parent, newParent
+			// and check if parent indices are correct
+
+			auto newPaIndex = GameObject::AddChild(a, grandParentIndex, GameObject());
+			auto relocatedParentIndex = 3;
+			auto gp = a[grandParentIndex];
+			auto pa = a[relocatedParentIndex];
+			Assert::IsTrue(gp.hasChildren && gp.childrenStartIndex == 3 && gp.childrenEndIndex == 4);
+			Assert::IsTrue(pa.hasChildren && pa.childrenStartIndex == 2 && pa.childrenEndIndex == 2);
+			Assert::IsTrue(a[childIndex].parentIndex == 3);
+			Assert::IsTrue(a[relocatedParentIndex].parentIndex == grandParentIndex);
+			Assert::IsTrue(a[newPaIndex].parentIndex == grandParentIndex);
+		}
 
 		TEST_METHOD(AddChildren)
 		{

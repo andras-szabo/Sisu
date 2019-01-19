@@ -71,7 +71,7 @@ public:
 			arena[newIndex].index = newIndex;
 			if (arena[newIndex].hasChildren)
 			{
-				for (std::size_t j = arena[newIndex].childrenStartIndex; j < arena[newIndex].childrenEndIndex; ++j)
+				for (std::size_t j = arena[newIndex].childrenStartIndex; j <= arena[newIndex].childrenEndIndex; ++j)
 				{
 					arena[j].parentIndex = newIndex;
 				}
@@ -142,7 +142,7 @@ public:
 			arena[newIndex].index = newIndex;
 			if (arena[newIndex].hasChildren)
 			{
-				for (std::size_t j = arena[newIndex].childrenStartIndex; j < arena[newIndex].childrenEndIndex; ++j)
+				for (std::size_t j = arena[newIndex].childrenStartIndex; j <= arena[newIndex].childrenEndIndex; ++j)
 				{
 					arena[j].parentIndex = newIndex;
 				}
