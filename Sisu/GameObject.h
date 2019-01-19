@@ -9,9 +9,7 @@ class GameObject
 public:
 	static std::size_t AddToArena(Arena<GameObject>& arena, GameObject go)
 	{
-		auto index = arena.AddAnywhere(go);
-		arena[index].index = index;
-		return index;
+		return arena.AddAnywhere(go);
 	}
 
 	static std::size_t AddChildren(Arena<GameObject>& arena, std::size_t parentIndex,
@@ -30,7 +28,6 @@ public:
 			
 			for (auto i = 0; i < newChildrenCount; ++i)
 			{
-				arena[firstChildIndex + i].index = firstChildIndex + i;
 				arena[firstChildIndex + i].parentIndex = parentIndex;
 			}
 
@@ -48,7 +45,6 @@ public:
 
 			for (auto i = 0; i < newChildrenCount; ++i)
 			{
-				arena[firstChildIndex + i].index = firstChildIndex + i;
 				arena[firstChildIndex + i].parentIndex = parentIndex;
 			}
 
@@ -68,7 +64,6 @@ public:
 		{
 			auto newIndex = gapStartIndex + i;
 			arena.AddAt(newIndex, arena[fromIndex + i]);
-			arena[newIndex].index = newIndex;
 			if (arena[newIndex].hasChildren)
 			{
 				for (std::size_t j = arena[newIndex].childrenStartIndex; j <= arena[newIndex].childrenEndIndex; ++j)
@@ -86,7 +81,6 @@ public:
 		
 		for (auto i = 0; i < newChildrenCount; ++i)
 		{
-			arena[firstChildIndex + i].index = firstChildIndex + i;
 			arena[firstChildIndex + i].parentIndex = parentIndex;
 		}
 	
@@ -102,7 +96,6 @@ public:
 		{
 			auto childIndex = arena.GetStartIndexForGap(1, parentIndex);
 			arena.AddAt(childIndex, child);
-			arena[childIndex].index = childIndex;
 
 			auto& parent = arena[parentIndex];
 
@@ -121,7 +114,6 @@ public:
 		{
 			auto childIndex = arena[parentIndex].childrenEndIndex + 1;
 			arena.AddAt(childIndex, child);
-			arena[childIndex].index = childIndex;
 			arena[parentIndex].childrenEndIndex = childIndex;
 			arena[childIndex].parentIndex = parentIndex;
 			return childIndex;
@@ -139,7 +131,6 @@ public:
 		{
 			auto newIndex = gapStartIndex + i;
 			arena.AddAt(newIndex, arena[fromIndex + i]);
-			arena[newIndex].index = newIndex;
 			if (arena[newIndex].hasChildren)
 			{
 				for (std::size_t j = arena[newIndex].childrenStartIndex; j <= arena[newIndex].childrenEndIndex; ++j)
@@ -154,7 +145,6 @@ public:
 		// Then add the new kid
 		auto newKidsIndex = gapStartIndex + existingKidCount;
 		arena.AddAt(newKidsIndex, child);
-		arena[newKidsIndex].index = newKidsIndex;
 		arena[newKidsIndex].parentIndex = parentIndex;
 
 		// Then set up the parent
@@ -169,8 +159,6 @@ public:
 	GameObject(const GameObject& other) = default;
 
 public:
-	//TODO - do we actually need index here? why?
-	std::size_t index;
 	std::size_t childrenStartIndex, childrenEndIndex;
 	std::size_t parentIndex;
 

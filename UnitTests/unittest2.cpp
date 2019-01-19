@@ -13,11 +13,11 @@ namespace UnitTests
 		TEST_METHOD(AddSimpleGO)
 		{
 			Arena<GameObject> a(10);
-			GameObject::AddToArena(a, GameObject());
-			Assert::IsTrue(a[0].index == 0);
+			auto index = GameObject::AddToArena(a, GameObject());
+			Assert::IsTrue(index == 0);
 
-			GameObject::AddToArena(a, GameObject());
-			Assert::IsTrue(a[1].index == 1);
+			index = GameObject::AddToArena(a, GameObject());
+			Assert::IsTrue(index == 1);
 		}
 
 		TEST_METHOD(AddChild)
