@@ -65,6 +65,43 @@ namespace UnitTests
 			Assert::IsTrue(a[newGOindex].hasChildren && a[newGOindex].childrenStartIndex == 2 && a[newGOindex].childrenEndIndex == 2);
 			Assert::IsTrue(a[freshChild].parentIndex == 3);
 		}
+		
+		TEST_METHOD(AddAndRelocateChildren)
+		{
+			Arena<GameObject> a;
+			auto parentIndex = GameObject::AddToArena(a, GameObject());
+			Assert::IsTrue(parentIndex == 0);
+			std::vector<GameObject> children;
+			for (int i = 0; i < 4; ++i)
+			{
+				children.push_back(GameObject());
+			}
+
+			auto childCount = children.end() - children.begin();
+			auto firstChildIndex = GameObject::AddChildren(a, parentIndex, children.begin(), children.end());
+			Assert::IsTrue(firstChildIndex == 1);
+			Assert::IsTrue(a[parentIndex].hasChildren);
+			Assert::IsTrue(a[parentIndex].childrenStartIndex == firstChildIndex && a[parentIndex].childrenEndIndex == firstChildIndex + 3);
+
+			auto newDudeIndex = GameObject::AddToArena(a, GameObject());
+			Assert::IsTrue(newDudeIndex == 5);
+			// parent, c1, c2, c3, c4, newDude
+
+			children.clear();
+			for (int i = 0; i < 2; ++i)
+			{
+				children.push_back(GameObject());
+			}
+
+			GameObject::AddChildren(a, parentIndex, children.begin(), children.end());
+			// expected:
+			// parent, _, _, _, _, newDude, c1, c2, c3, c4, c5, c6
+			//	0		1 2  3  4  5        6   7   8 	9   10  11
+			Assert::IsTrue(a[parentIndex].childrenStartIndex == 6);
+			Assert::IsTrue(a[parentIndex].childrenEndIndex == 11);
+		}
+
+		//TODO: Tests w/ hierarchies
 
 		TEST_METHOD(AddChildren)
 		{
@@ -101,8 +138,6 @@ namespace UnitTests
 			Assert::IsTrue(firstChildIndex == 1);
 			Assert::IsTrue(a[parentIndex].hasChildren);
 			Assert::IsTrue(a[parentIndex].childrenStartIndex == firstChildIndex && a[parentIndex].childrenEndIndex == firstChildIndex + 5);
-
-			//TODO: Test when relocating kids
 		}
 	};
 }

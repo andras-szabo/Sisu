@@ -55,7 +55,45 @@ public:
 			return arena[parentIndex].childrenStartIndex;
 		}
 
-		return 99;
+		// So now we need to relocate.
+		// TODO: DRY
+		auto& parent = arena[parentIndex];
+		auto existingKidCount = parent.childrenEndIndex - parent.childrenStartIndex + 1;
+		auto childrenCount = existingKidCount + newChildrenCount;
+		auto gapStartIndex = arena.GetStartIndexForGap(childrenCount, parentIndex);
+
+		// First copy the existing kids and update their indices
+		auto fromIndex = parent.childrenStartIndex;
+		for (std::size_t i = 0; i < existingKidCount; ++i)
+		{
+			auto newIndex = gapStartIndex + i;
+			arena.AddAt(newIndex, arena[fromIndex + i]);
+			arena[newIndex].index = newIndex;
+			if (arena[newIndex].hasChildren)
+			{
+				for (std::size_t j = arena[newIndex].childrenStartIndex; j < arena[newIndex].childrenEndIndex; ++j)
+				{
+					arena[j].parentIndex = newIndex;
+				}
+			}
+		}
+
+		arena.RemoveAt(fromIndex, existingKidCount);
+
+		// Then add the new kids
+		auto firstChildIndex = gapStartIndex + existingKidCount;
+		arena.AddAt(firstChildIndex, begin, end);	
+		
+		for (auto i = 0; i < newChildrenCount; ++i)
+		{
+			arena[firstChildIndex + i].index = firstChildIndex + i;
+			arena[firstChildIndex + i].parentIndex = parentIndex;
+		}
+	
+		arena[parentIndex].childrenStartIndex = gapStartIndex;
+		arena[parentIndex].childrenEndIndex = gapStartIndex + childrenCount - 1;
+
+		return arena[parentIndex].childrenStartIndex;
 	}
 
 	static std::size_t AddChild(Arena<GameObject>& arena, std::size_t parentIndex, GameObject child)
@@ -123,7 +161,7 @@ public:
 		arena[parentIndex].childrenStartIndex = gapStartIndex;
 		arena[parentIndex].childrenEndIndex = newKidsIndex;
 
-		return 0;
+		return newKidsIndex;
 	}
 
 	//TODO: make sure we know when we're making copies
