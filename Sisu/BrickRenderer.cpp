@@ -49,12 +49,62 @@ void BrickRenderer::PreDraw()
 		}
 
 		_dirtyFrameCount--;
+		_drawableObjectCount = bufferIndex;
 	}
 }
 
-void BrickRenderer::Draw(GameTimer* gt)
+void BrickRenderer::Draw(const GameTimer* gt)
 {
-	//TODO
+	//--> ResetCommandAllocator
+	auto commandAllocator = _currentFrameResource->commandAllocator;
+	ThrowIfFailed(commandAllocator->Reset());
+
+	//--> Reset command list with pipeline state
+	auto currentPSOID = _isWireframe ? "instanced_wireframe" : "instanced";
+	ThrowIfFailed(_commandList->Reset(commandAllocator.Get(), _PSOs[currentPSOID].Get()));
+
+	_commandList->RSSetViewports(1, &_screenViewport);
+	_commandList->RSSetScissorRects(1, &_scissorRect);
+
+	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	_commandList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::CornflowerBlue, 0, nullptr);
+	_commandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);	
+	_commandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+	ID3D12DescriptorHeap* descriptorHeaps[] = { _cbvHeap.Get() };
+	_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+	_commandList->SetGraphicsRootSignature(_instancedRootSignature.Get());
+
+	auto passCBVindex = _currentFrameResourceIndex;
+	auto passCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_cbvHeap->GetGPUDescriptorHandleForHeapStart());
+	passCBVhandle.Offset(passCBVindex, _CbvSrvUavDescriptorSize);
+
+	_commandList->SetGraphicsRootDescriptorTable(0, passCBVhandle);
+	DrawBricks(_commandList.Get());
+
+	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	ThrowIfFailed(_commandList->Close());
+
+	ID3D12CommandList* cmdsLists[] = { _commandList.Get() };
+	_commandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	ThrowIfFailed(_swapChain->Present(0, 0));
+	_currentBackBufferIndex = (_currentBackBufferIndex + 1) % SwapChainBufferCount;
+
+	_currentFrameResource->fence = ++_currentFence;
+	_commandQueue->Signal(_fence.Get(), _currentFence);
+}
+
+void BrickRenderer::DrawBricks(ID3D12GraphicsCommandList* cmdList)
+{
+	auto buffer = _currentFrameResource->instanceBuffer->Resource();
+	auto brick = _geometries["shapeGeo"]->drawArgs["brick"];
+
+	cmdList->IASetVertexBuffers(0, 1, &_geometries["shapeGeo"]->GetVertexBufferView());
+	cmdList->IASetIndexBuffer(&_geometries["shapeGeo"]->GetIndexBufferView());
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->SetGraphicsRootShaderResourceView(1, buffer->GetGPUVirtualAddress());
+	cmdList->DrawIndexedInstanced(brick.indexCount, _drawableObjectCount, brick.startIndexLocation, brick.baseVertexLocation, 0);
 }
 
 void BrickRenderer::OnResize()
@@ -176,7 +226,7 @@ void BrickRenderer::BuildShapeGeometry()
 	geo->indexFormat = DXGI_FORMAT_R16_UINT;
 	geo->indexBufferByteSize = ibByteSize;
 
-	geo->drawArgs["box"] = boxSubmesh;
+	geo->drawArgs["brick"] = boxSubmesh;
 
 	_geometries[geo->name] = std::move(geo);
 }

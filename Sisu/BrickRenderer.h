@@ -28,7 +28,7 @@ public:
 
 	virtual bool Init() override;
 	virtual void PreDraw() override;
-	virtual void Draw(GameTimer* gt) override;
+	virtual void Draw(const GameTimer* gt) override;
 
 protected:
 	virtual void OnResize() override;
@@ -41,6 +41,8 @@ private:
 	void BuildRootSignatures();
 	void BuildShadersAndInputLayout();
 	void BuildPSOs();
+
+	void DrawBricks(ID3D12GraphicsCommandList* cmdList);
 
 	UINT AddToVertexBuffer(const GeometryGenerator::MeshData& mesh,
 		std::vector<BrickVertex>& vertices,
@@ -66,4 +68,6 @@ private:
 
 	Arena<GameObject>* _bricks;
 	int _dirtyFrameCount = FrameResourceCount;
+	bool _isWireframe;
+	UINT _drawableObjectCount = 0;
 };

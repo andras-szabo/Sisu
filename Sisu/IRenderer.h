@@ -7,5 +7,5 @@ struct IRenderer
 	virtual bool Init() = 0;
 	virtual void OnResize() = 0;
 	virtual void PreDraw() = 0;
-	virtual void Draw(GameTimer* gt) = 0;
+	virtual void Draw(const GameTimer* gt) = 0;
 };

@@ -11,6 +11,10 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	success &= InitWindowManager(width, height, title);
 	success &= InitRenderer();
 
+	//TODO
+	GameObject::AddToArena(*_gameObjects, GameObject());
+	(*_gameObjects)[0].isVisible = true;
+
 	return success;
 }
 
