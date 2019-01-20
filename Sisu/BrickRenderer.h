@@ -27,8 +27,8 @@ public:
 	}
 
 	virtual bool Init() override;
-	virtual void PreDraw() override;
-	virtual void Draw(const GameTimer* gt) override;
+	virtual void Update(const GameTimer& gt) override;
+	virtual void Draw(const GameTimer& gt) override;
 
 protected:
 	virtual void OnResize() override;
@@ -43,6 +43,9 @@ private:
 	void BuildPSOs();
 
 	void DrawBricks(ID3D12GraphicsCommandList* cmdList);
+	void UpdateCamera(const GameTimer& gt);
+	void UpdateInstanceData();
+	void UpdateMainPassCB(const GameTimer& gt);
 
 	UINT AddToVertexBuffer(const GeometryGenerator::MeshData& mesh,
 		std::vector<BrickVertex>& vertices,
@@ -70,4 +73,9 @@ private:
 	int _dirtyFrameCount = FrameResourceCount;
 	bool _isWireframe;
 	UINT _drawableObjectCount = 0;
+
+	//Camera related
+	float _theta = 1.5f * DirectX::XM_PI;
+	float _phi = 0.2f * DirectX::XM_PI;
+	float _radius = 15.0f;
 };

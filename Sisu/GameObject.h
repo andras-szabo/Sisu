@@ -155,14 +155,21 @@ public:
 	}
 
 	//TODO: make sure we know when we're making copies
-	GameObject() = default;
+	GameObject()
+	{
+		localPosition = Sisu::Vector3::Zero();
+		localRotation = Sisu::Vector3::Zero();
+		localScale = Sisu::Vector3(1.0, 1.0, 1.0);
+		color = Sisu::Color::Blue();
+		transform = Sisu::Matrix4::Identity();
+	}
+
 	GameObject(const GameObject& other) = default;
 
 public:
 	std::size_t childrenStartIndex, childrenEndIndex;
 	std::size_t parentIndex;
 
-	bool isRoot;
 	bool hasChildren;
 	bool isVisible;
 

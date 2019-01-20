@@ -79,12 +79,12 @@ int SisuApp::Run()
 
 void SisuApp::Update()
 {
-	_renderer->PreDraw();
+	_renderer->Update(*_gameTimer.get());
 }
 
 void SisuApp::Draw()
 {
-	_renderer->Draw(_gameTimer.get());
+	_renderer->Draw(*_gameTimer.get());
 }
 
 void SisuApp::Pause(bool newState)

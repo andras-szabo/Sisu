@@ -29,10 +29,63 @@ bool BrickRenderer::Init()
 	return true;
 }
 
-void BrickRenderer::PreDraw()
+void BrickRenderer::Update(const GameTimer& gt)
 {
+	UpdateCamera(gt);
 	WaitForNextFrameResource();
-	
+	UpdateInstanceData();
+	UpdateMainPassCB(gt);
+}
+
+void BrickRenderer::UpdateCamera(const GameTimer& gt)
+{
+	// Convert spherical to Cartesian coordinates
+	_eyePos.x = _radius * sinf(_phi) * cosf(_theta);
+	_eyePos.y = _radius * cosf(_phi);
+	_eyePos.z = _radius * sinf(_phi) * sinf(_theta);
+
+	// Build the view matrix
+	DirectX::XMVECTOR camPos = DirectX::XMVectorSet(_eyePos.x, _eyePos.y, _eyePos.z, 1.0f);
+	DirectX::XMVECTOR target = DirectX::XMVectorZero();
+	DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(camPos, target, up);
+	DirectX::XMStoreFloat4x4(&_viewMatrix, view);
+}
+
+void BrickRenderer::UpdateMainPassCB(const GameTimer& gt)
+{
+	DirectX::XMMATRIX viewMatrix = DirectX::XMLoadFloat4x4(&_viewMatrix);
+	DirectX::XMMATRIX projectionMatrix = DirectX::XMLoadFloat4x4(&_projMatrix);
+
+	DirectX::XMMATRIX viewProj = DirectX::XMMatrixMultiply(viewMatrix, projectionMatrix);
+	DirectX::XMMATRIX inverseView = DirectX::XMMatrixInverse(&DirectX::XMMatrixDeterminant(viewMatrix), viewMatrix);
+	DirectX::XMMATRIX inverseProj = DirectX::XMMatrixInverse(&DirectX::XMMatrixDeterminant(projectionMatrix), projectionMatrix);
+	DirectX::XMMATRIX inverseViewProj = DirectX::XMMatrixInverse(&DirectX::XMMatrixDeterminant(viewProj), viewProj);
+
+	DirectX::XMStoreFloat4x4(&_mainPassCB.view, DirectX::XMMatrixTranspose(viewMatrix));
+	DirectX::XMStoreFloat4x4(&_mainPassCB.invView, DirectX::XMMatrixTranspose(inverseView));
+	DirectX::XMStoreFloat4x4(&_mainPassCB.proj, DirectX::XMMatrixTranspose(projectionMatrix));
+	DirectX::XMStoreFloat4x4(&_mainPassCB.invProj, DirectX::XMMatrixTranspose(inverseProj));
+	DirectX::XMStoreFloat4x4(&_mainPassCB.viewProj, DirectX::XMMatrixTranspose(viewProj));
+	DirectX::XMStoreFloat4x4(&_mainPassCB.invViewProj, DirectX::XMMatrixTranspose(inverseViewProj));
+
+	_mainPassCB.eyePosW = _eyePos;
+
+	auto windowDimensions = _windowManager->Dimensions();
+	_mainPassCB.renderTargetSize = DirectX::XMFLOAT2((float)windowDimensions.first, (float)windowDimensions.second);
+	_mainPassCB.invRenderTargetSize = DirectX::XMFLOAT2(1.0f / windowDimensions.first, 1.0f / windowDimensions.second);
+	_mainPassCB.nearZ = 1.0f;
+	_mainPassCB.farZ = 1000.0f;
+	_mainPassCB.totalTime = gt.SecondsSinceReset();
+	_mainPassCB.deltaTime = gt.DeltaTimeSeconds();
+
+	auto currPassCB = _currentFrameResource->passConstantBuffer.get();
+	currPassCB->CopyData(0, _mainPassCB);
+}
+
+void BrickRenderer::UpdateInstanceData()
+{	
 	if (_dirtyFrameCount > 0)
 	{
 		auto currentInstanceBuffer = _currentFrameResource->instanceBuffer.get();
@@ -53,7 +106,7 @@ void BrickRenderer::PreDraw()
 	}
 }
 
-void BrickRenderer::Draw(const GameTimer* gt)
+void BrickRenderer::Draw(const GameTimer& gt)
 {
 	//--> ResetCommandAllocator
 	auto commandAllocator = _currentFrameResource->commandAllocator;
