@@ -7,6 +7,7 @@
 #include "IRenderer.h"
 #include "Arena.h"
 #include "GameObject.h"
+#include "TransformUpdateSystem.h"
 
 class SisuApp
 {
@@ -53,6 +54,7 @@ protected:
 	bool InitGameTimer();
 	bool InitWindowManager(int width, int height, const std::wstring& title);
 	bool InitRenderer();
+	bool InitTransformUpdateSystem();
 
 	void CalculateFrameStats();
 
@@ -64,6 +66,8 @@ protected:
 	std::unique_ptr<GameTimer> _gameTimer;
 	std::unique_ptr<WindowManager> _windowManager;
 	std::unique_ptr<IRenderer> _renderer;
+
+	std::unique_ptr<TransformUpdateSystem> _transformUpdateSystem;
 
 	bool _isRendererSetup = false;
 };

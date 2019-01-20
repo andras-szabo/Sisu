@@ -1,8 +1,8 @@
 #pragma once
 #include <cstddef>
 #include <vector>
-#include "SisuUtilities.h"
 #include "Arena.h"
+#include "SisuUtilities.h"
 
 class GameObject
 {
@@ -28,7 +28,7 @@ public:
 			
 			for (auto i = 0; i < newChildrenCount; ++i)
 			{
-				arena[firstChildIndex + i].parentIndex = parentIndex;
+				arena[firstChildIndex + i].SetParent(parentIndex);
 			}
 
 			return firstChildIndex;
@@ -45,7 +45,7 @@ public:
 
 			for (auto i = 0; i < newChildrenCount; ++i)
 			{
-				arena[firstChildIndex + i].parentIndex = parentIndex;
+				arena[firstChildIndex + i].SetParent(parentIndex);
 			}
 
 			return arena[parentIndex].childrenStartIndex;
@@ -81,7 +81,7 @@ public:
 		
 		for (auto i = 0; i < newChildrenCount; ++i)
 		{
-			arena[firstChildIndex + i].parentIndex = parentIndex;
+			arena[firstChildIndex + i].SetParent(parentIndex);
 		}
 	
 		arena[parentIndex].childrenStartIndex = gapStartIndex;
@@ -103,7 +103,7 @@ public:
 			parent.childrenStartIndex = childIndex;
 			parent.childrenEndIndex = childIndex;
 
-			arena[childIndex].parentIndex = parentIndex;
+			arena[childIndex].SetParent(parentIndex);
 
 			return childIndex;
 		}
@@ -115,7 +115,7 @@ public:
 			auto childIndex = arena[parentIndex].childrenEndIndex + 1;
 			arena.AddAt(childIndex, child);
 			arena[parentIndex].childrenEndIndex = childIndex;
-			arena[childIndex].parentIndex = parentIndex;
+			arena[childIndex].SetParent(parentIndex);
 			return childIndex;
 		}
 
@@ -145,7 +145,7 @@ public:
 		// Then add the new kid
 		auto newKidsIndex = gapStartIndex + existingKidCount;
 		arena.AddAt(newKidsIndex, child);
-		arena[newKidsIndex].parentIndex = parentIndex;
+		arena[newKidsIndex].SetParent(parentIndex);
 
 		// Then set up the parent
 		arena[parentIndex].childrenStartIndex = gapStartIndex;
@@ -162,21 +162,33 @@ public:
 		localScale = Sisu::Vector3(1.0, 1.0, 1.0);
 		color = Sisu::Color::Blue();
 		transform = Sisu::Matrix4::Identity();
+		velocityPerSec = Sisu::Vector3::Zero();
 	}
 
 	GameObject(const GameObject& other) = default;
 
-public:
-	std::size_t childrenStartIndex, childrenEndIndex;
-	std::size_t parentIndex;
+	void SetParent(std::size_t parentIndex)
+	{
+		this->parentIndex = parentIndex;
+		this->isRoot = false;
+	}
 
-	bool isRoot = false;
+	void RefreshTransform(Sisu::Matrix4* parentTransform);
+
+public:
+	std::size_t childrenStartIndex = 0;
+	std::size_t childrenEndIndex = 0;
+	std::size_t parentIndex = 0;
+
+	bool isRoot = true;
 	bool hasChildren = false;
 	bool isVisible = true;
 
 	Sisu::Vector3 localPosition;
 	Sisu::Vector3 localRotation;
 	Sisu::Vector3 localScale;
+
+	Sisu::Vector3 velocityPerSec;
 
 	Sisu::Color color;
 	Sisu::Matrix4 transform;

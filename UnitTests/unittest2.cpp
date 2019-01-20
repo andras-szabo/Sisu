@@ -15,9 +15,11 @@ namespace UnitTests
 			Arena<GameObject> a(10);
 			auto index = GameObject::AddToArena(a, GameObject());
 			Assert::IsTrue(index == 0);
+			Assert::IsTrue(a[index].isRoot);
 
 			index = GameObject::AddToArena(a, GameObject());
 			Assert::IsTrue(index == 1);
+			Assert::IsTrue(a[index].isRoot);
 		}
 
 		TEST_METHOD(AddChild)
@@ -28,6 +30,7 @@ namespace UnitTests
 
 			Assert::IsTrue(parentIndex == 0);
 			Assert::IsTrue(childIndex == 1);
+			Assert::IsFalse(a[childIndex].isRoot);
 
 			const auto& parent = a[parentIndex];
 			const auto& child = a[childIndex];

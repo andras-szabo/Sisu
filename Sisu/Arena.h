@@ -372,7 +372,7 @@ struct ArenaIterator
 		return *this;
 	}
 
-	const T& operator*()
+	T& operator*()
 	{
 		return (*arena)[index];
 	}

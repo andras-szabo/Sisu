@@ -164,6 +164,7 @@
     </ClCompile>
     <ClCompile Include="unittest1.cpp" />
     <ClCompile Include="unittest2.cpp" />
+    <ClCompile Include="unittest3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sisu\Sisu.vcxproj">

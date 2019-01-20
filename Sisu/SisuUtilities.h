@@ -9,6 +9,15 @@ namespace Sisu
 		Vector3(float px, float py, float pz) : x(px), y(py), z(pz) {}
 
 		float x, y, z;
+
+		Vector3& operator+=(const Vector3& other)
+		{
+			x += other.x;
+			y += other.y;
+			z += other.z;
+
+			return *this;
+		}
 	};
 
 	struct Color
@@ -46,4 +55,8 @@ namespace Sisu
 
 		Vector4 r0, r1, r2, r3;
 	};
+
+	// Arithmetics
+	Sisu::Vector3 operator*(const Sisu::Vector3& vec, float s);
+	Sisu::Matrix4 operator*(const Sisu::Matrix4& a, const Sisu::Matrix4& b);
 }

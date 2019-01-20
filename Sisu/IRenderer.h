@@ -8,4 +8,5 @@ struct IRenderer
 	virtual void OnResize() = 0;
 	virtual void Update(const GameTimer& gt) = 0;
 	virtual void Draw(const GameTimer& gt) = 0;
+	virtual void SetDirty() = 0;
 };

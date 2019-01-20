@@ -10,10 +10,14 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	success &= InitGameTimer();
 	success &= InitWindowManager(width, height, title);
 	success &= InitRenderer();
+	success &= InitTransformUpdateSystem();
 
-	//TODO
+	//TODO proper setup
 	GameObject::AddToArena(*_gameObjects, GameObject());
-	(*_gameObjects)[0].isVisible = true;
+	auto& testObject = (*_gameObjects)[0];
+
+	testObject.isVisible = true;
+	testObject.velocityPerSec = Sisu::Vector3(0.2, 0.2, 0.0);
 
 	return success;
 }
@@ -42,6 +46,12 @@ bool SisuApp::InitRenderer()
 												_gameTimer.get(),
 												_gameObjects.get());
 	return _renderer->Init();
+}
+
+bool SisuApp::InitTransformUpdateSystem()
+{
+	_transformUpdateSystem = std::make_unique<TransformUpdateSystem>();
+	return _transformUpdateSystem != nullptr;
 }
 
 int SisuApp::Run()
@@ -79,7 +89,15 @@ int SisuApp::Run()
 
 void SisuApp::Update()
 {
-	_renderer->Update(*_gameTimer.get());
+	const auto& gt = *_gameTimer;
+	auto hasSomethingChanged = _transformUpdateSystem->Update(gt, *_gameObjects);
+
+	if (hasSomethingChanged)
+	{
+		_renderer->SetDirty();
+	}
+
+	_renderer->Update(gt);
 }
 
 void SisuApp::Draw()

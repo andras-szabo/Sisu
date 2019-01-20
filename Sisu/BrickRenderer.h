@@ -27,6 +27,7 @@ public:
 	}
 
 	virtual bool Init() override;
+	virtual void SetDirty() override { _dirtyFrameCount = FrameResourceCount; }
 	virtual void Update(const GameTimer& gt) override;
 	virtual void Draw(const GameTimer& gt) override;
 
