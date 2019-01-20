@@ -170,8 +170,9 @@ public:
 	std::size_t childrenStartIndex, childrenEndIndex;
 	std::size_t parentIndex;
 
-	bool hasChildren;
-	bool isVisible;
+	bool isRoot = false;
+	bool hasChildren = false;
+	bool isVisible = true;
 
 	Sisu::Vector3 localPosition;
 	Sisu::Vector3 localRotation;
