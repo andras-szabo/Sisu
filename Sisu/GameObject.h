@@ -189,7 +189,9 @@ public:
 	Sisu::Vector3 localScale;
 
 	Sisu::Vector3 velocityPerSec;
+	Sisu::Vector3 eulerRotPerSec;
 
 	Sisu::Color color;
 	Sisu::Matrix4 transform;
+	Sisu::Quat rotQuat = Sisu::Quat::Identity();
 };

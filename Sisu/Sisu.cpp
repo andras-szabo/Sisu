@@ -17,13 +17,15 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	auto& testObject = (*_gameObjects)[parentIndex];
 
 	testObject.isVisible = true;
-	testObject.velocityPerSec = Sisu::Vector3(0.2, 0.2, 0.0);
+	testObject.velocityPerSec = Sisu::Vector3(1.0, 0.0, -1.0);
+	testObject.eulerRotPerSec = Sisu::Vector3(0.0, 45.0, 0.0);
 
 	auto childIndex = GameObject::AddChild(*_gameObjects, parentIndex, GameObject());
 	auto& child = (*_gameObjects)[childIndex];
 
 	child.isVisible = true;
 	child.localPosition = Sisu::Vector3(-0.5, -1.5, 0.0);
+	child.eulerRotPerSec = Sisu::Vector3::Zero();
 
 	return success;
 }

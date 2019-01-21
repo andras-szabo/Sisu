@@ -21,6 +21,8 @@ bool TransformUpdateSystem::Update(const GameTimer& gt, Arena<GameObject>& brick
 
 bool TransformUpdateSystem::DoUpdate(Arena<GameObject>& bricks)
 {
+	static int updateCount = 0;
+
 	auto somethingChanged = false;
 	_bricksToUpdate.clear();
 	_bricksToUpdateIndex = 0;
@@ -37,7 +39,11 @@ bool TransformUpdateSystem::DoUpdate(Arena<GameObject>& bricks)
 		auto brick = _bricksToUpdate[_bricksToUpdateIndex];
 		auto delta = brick->velocityPerSec * _updatePeriod;
 		brick->localPosition += delta;
-		// TODO update rotation
+
+		auto deltaRot = brick->eulerRotPerSec * _updatePeriod;
+		auto rotq = Sisu::Quat::Euler(deltaRot);
+		brick->rotQuat = rotq * brick->rotQuat;
+
 		// TODO update scale maybe
 
 		auto parentTransform = brick->isRoot ? nullptr : &bricks[brick->parentIndex].transform;
