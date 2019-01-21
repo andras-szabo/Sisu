@@ -13,11 +13,17 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	success &= InitTransformUpdateSystem();
 
 	//TODO proper setup
-	GameObject::AddToArena(*_gameObjects, GameObject());
-	auto& testObject = (*_gameObjects)[0];
+	auto parentIndex = GameObject::AddToArena(*_gameObjects, GameObject());
+	auto& testObject = (*_gameObjects)[parentIndex];
 
 	testObject.isVisible = true;
 	testObject.velocityPerSec = Sisu::Vector3(0.2, 0.2, 0.0);
+
+	auto childIndex = GameObject::AddChild(*_gameObjects, parentIndex, GameObject());
+	auto& child = (*_gameObjects)[childIndex];
+
+	child.isVisible = true;
+	child.localPosition = Sisu::Vector3(-0.5, -1.5, 0.0);
 
 	return success;
 }
