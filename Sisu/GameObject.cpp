@@ -26,13 +26,9 @@ void GameObject::RefreshTransform(Sisu::Matrix4* parentTransform)
 							  Sisu::Vector4(0.0, 0.0, 1.0, 0.0),
 							  Sisu::Vector4(localPosition.x, localPosition.y, localPosition.z, 1.0));
 
-	// Now then
-	transform = (scaleMatrix * rotMatrix) * translateMatrix;
-
-	// And then the parent:
+	transform = scaleMatrix * rotMatrix * translateMatrix;
 	if (parentTransform != nullptr)
 	{
-		transform = (*parentTransform) * transform;
+		transform = transform * (*parentTransform);
 	}
-
 }
