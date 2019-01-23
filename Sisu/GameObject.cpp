@@ -1,14 +1,6 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
-// Then:
-// create new local transform matrix by:
-// - create scale matrix
-// - create rotation matrix
-// - create translate matrix
-// == local = scale * rot * translate
-// THEN:
-// world = parent * local
 void GameObject::RefreshTransform(Sisu::Matrix4* parentTransform)
 {
 	// Create scale matrix

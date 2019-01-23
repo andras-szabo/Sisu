@@ -11,7 +11,6 @@ class GameObject;
 struct BrickVertex
 {
 	DirectX::XMFLOAT3 Pos;
-	DirectX::XMFLOAT4 Color;
 };
 
 class BrickRenderer : public D3DRenderer

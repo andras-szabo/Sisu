@@ -27,7 +27,9 @@ namespace Sisu
 
 	struct Color
 	{
-		static Color Blue() { return Color(0.0, 0.0, 1.0, 1.0); }
+		static Color Blue() { return Color(0.0f, 0.0f, 1.0f, 1.0f); }
+		static Color Red()  { return Color(1.0f, 0.0f, 0.0f, 1.0f); }
+		static Color Black() { return Color(0.0f, 0.0f, 0.0f, 1.0f); }
 
 		Color() = default;
 		Color(float pr, float pg, float pb, float pa) : r(pr), g(pg), b(pb), a(pa) {}

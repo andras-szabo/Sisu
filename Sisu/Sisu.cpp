@@ -17,7 +17,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	auto& testObject = (*_gameObjects)[parentIndex];
 
 	testObject.isVisible = true;
-	testObject.velocityPerSec = Sisu::Vector3(0.25, 0.0, 0.0);
+	testObject.velocityPerSec = Sisu::Vector3(0.05, 0.0, 0.0);
 	testObject.eulerRotPerSec = Sisu::Vector3(0.0, 0.0, 90.0);
 	testObject.localScale = Sisu::Vector3(1.0, 1.0, 1.0);
 
@@ -28,6 +28,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	child.localPosition = Sisu::Vector3(-2.0, 0.0, 0.0);
 	child.eulerRotPerSec = Sisu::Vector3(0.0, 45.0, 0.0);
 	child.localScale = Sisu::Vector3(0.5, 0.5, 0.5);
+	child.color = Sisu::Color::Red();
 
 	auto grandKidIndex = GameObject::AddChild(*_gameObjects, childIndex, GameObject());
 	auto& grandKid = (*_gameObjects)[grandKidIndex];
@@ -36,6 +37,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	grandKid.localPosition = Sisu::Vector3(-2.0, 0.0, 0.0);
 	grandKid.eulerRotPerSec = Sisu::Vector3(0.0, 22.5, 22.5);
 	grandKid.localScale = Sisu::Vector3(0.5, 2.5, 0.5);
+	grandKid.color = Sisu::Color::Black();
 
 	return success;
 }

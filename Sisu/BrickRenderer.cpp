@@ -97,6 +97,7 @@ void BrickRenderer::UpdateInstanceData()
 			{
 				DirectX::XMMATRIX worldMatrix = ToXMMatrix(brick.transform);
 				FRObjectConstants objConstants(worldMatrix);
+				objConstants.color = DirectX::XMFLOAT4(brick.color.r, brick.color.g, brick.color.b, brick.color.a);
 				currentInstanceBuffer->CopyData(bufferIndex++, objConstants);
 			}
 		}
@@ -181,8 +182,7 @@ void BrickRenderer::BuildShadersAndInputLayout()
 
 	_inputLayout =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
@@ -290,7 +290,6 @@ UINT BrickRenderer::AddToVertexBuffer(const GeometryGenerator::MeshData& mesh,
 	for (std::size_t i = 0; i < mesh.Vertices.size(); ++i, ++startIndex)
 	{
 		vertices[startIndex].Pos = mesh.Vertices[i].Position;
-		vertices[startIndex].Color = color;
 	}
 
 	return startIndex;

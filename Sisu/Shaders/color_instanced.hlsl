@@ -1,6 +1,7 @@
 struct InstanceData
 {
 	float4x4 world;
+	float4 color;
 };
 
 StructuredBuffer<InstanceData> gInstanceData : register(t0);
@@ -26,7 +27,6 @@ cbuffer cbPass : register(b0)
 struct VertexIn
 {
 	float3 PosL : POSITION;
-	float4 Color : COLOR;
 };
 
 struct VertexOut
@@ -40,7 +40,7 @@ VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
 	VertexOut vout;
 	float4 posW = mul(float4(vin.PosL, 1.0f), gInstanceData[instanceID].world);
 	vout.PosH = mul(posW, gViewProj);
-	vout.Color = vin.Color;
+	vout.Color = gInstanceData[instanceID].color;
 	return vout;
 }
 
