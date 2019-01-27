@@ -1,15 +1,19 @@
 #include "stdafx.h"
 #include "Sisu.h"
 #include "BrickRenderer.h"
+#include "InputService.h"
 
 bool SisuApp::Init(int width, int height, const std::wstring& title)
 {
 	auto success = true;
 
 	success &= InitArenas();
+
 	success &= InitGameTimer();
-	success &= InitWindowManager(width, height, title);
-	success &= InitRenderer();
+	success &= InitInputService(_gameTimer.get());
+	success &= InitWindowManager(_inputService.get(), width, height, title);
+	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get());
+
 	success &= InitTransformUpdateSystem();
 
 	//TODO proper setup
@@ -54,17 +58,21 @@ bool SisuApp::InitGameTimer()
 	return _gameTimer != nullptr;
 }
 
-bool SisuApp::InitWindowManager(int width, int height, const std::wstring& title)
+bool SisuApp::InitInputService(GameTimer* const gt)
 {
-	_windowManager = std::make_unique<WindowManager>(*this, width, height, title);
+	_inputService = std::make_unique<InputService>(gt);
+	return _inputService != nullptr;
+}
+
+bool SisuApp::InitWindowManager(IInputService* const inputService, int width, int height, const std::wstring& title)
+{
+	_windowManager = std::make_unique<WindowManager>(*this, inputService, width, height, title);
 	return _windowManager->IsSetup();
 }
 
-bool SisuApp::InitRenderer()
+bool SisuApp::InitRenderer(WindowManager* const windowManager, GameTimer* const gt, Arena<GameObject>* const arena)
 {
-	_renderer = std::make_unique<BrickRenderer>(_windowManager.get(), 
-												_gameTimer.get(),
-												_gameObjects.get());
+	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena);
 	return _renderer->Init();
 }
 

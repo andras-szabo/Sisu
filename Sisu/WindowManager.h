@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 
+class IInputService;
 class SisuApp;
 
 class WindowManager
@@ -14,7 +15,7 @@ public:
 	static WindowManager* GetInstance();
 
 	WindowManager() = default;
-	WindowManager(SisuApp& app, int width, int height, const std::wstring& caption);
+	WindowManager(SisuApp& app, IInputService* const inputService, int width, int height, const std::wstring& caption);
 
 	float AspectRatio() const { return static_cast<float>(_width) / _height; }
 	std::pair<int, int> Dimensions() const { return std::pair<int, int>(_width, _height); }
@@ -44,6 +45,7 @@ private:
 	int _height = 0;
 
 	SisuApp& _app;
+	IInputService* const _inputService;
 
 	bool _isMinimized = false;
 	bool _isMaximized = false;

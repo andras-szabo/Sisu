@@ -13,11 +13,13 @@ WindowManager* WindowManager::GetInstance()
 	return _instance;
 }
 
-WindowManager::WindowManager(SisuApp& app, int width, int height, const std::wstring& caption) :
+WindowManager::WindowManager(SisuApp& app, IInputService* const inputService, 
+							  int width, int height, const std::wstring& caption):
 	_width(width),
 	_height(height),
 	_app(app),
-	_caption(caption)
+	_caption(caption),
+	_inputService(inputService)
 {
 	_instance = this;
 
@@ -175,25 +177,25 @@ LRESULT WindowManager::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		case WM_LBUTTONDOWN:
 		case WM_MBUTTONDOWN:
 		case WM_RBUTTONDOWN:
-			_app.OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			_inputService->OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			return 0;
 
 		case WM_LBUTTONUP:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONUP:
-			_app.OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			_inputService->OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			return 0;
 
 		case WM_MOUSEMOVE:
-			_app.OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			_inputService->OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			return 0;
 
 		case WM_KEYDOWN:
-			_app.OnKeyDown(wParam);
+			_inputService->OnKeyDown(wParam);
 			return 0;
 
 		case WM_KEYUP:
-			_app.OnKeyUp(wParam);
+			_inputService->OnKeyUp(wParam);
 			return 0;
 	}
 

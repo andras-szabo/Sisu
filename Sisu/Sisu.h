@@ -5,6 +5,7 @@
 #include "WindowManager.h"
 #include "GameTimer.h"
 #include "IRenderer.h"
+#include "IInputService.h"
 #include "Arena.h"
 #include "GameObject.h"
 #include "TransformUpdateSystem.h"
@@ -43,17 +44,13 @@ protected:
 	virtual void Update();
 	virtual void Draw();
 
-	virtual void OnMouseDown(WPARAM buttonState, int x, int y) {}
-	virtual void OnMouseUp(WPARAM buttonState, int x, int y) {}
-	virtual void OnMouseMove(WPARAM buttonState, int x, int y) {}
-
-	virtual void OnKeyDown(WPARAM virtualKeyCode) {}
-	virtual void OnKeyUp(WPARAM virtualKeyCode) {}
-
 	bool InitArenas();
 	bool InitGameTimer();
-	bool InitWindowManager(int width, int height, const std::wstring& title);
-	bool InitRenderer();
+
+	bool InitInputService(GameTimer* const gt);
+	bool InitWindowManager(IInputService* const inputService, int width, int height, const std::wstring& title);
+	bool InitRenderer(WindowManager* const windowManager, GameTimer* const gt, Arena<GameObject>* const arena);
+
 	bool InitTransformUpdateSystem();
 
 	void CalculateFrameStats();
@@ -66,6 +63,7 @@ protected:
 	std::unique_ptr<GameTimer> _gameTimer;
 	std::unique_ptr<WindowManager> _windowManager;
 	std::unique_ptr<IRenderer> _renderer;
+	std::unique_ptr<IInputService> _inputService;
 
 	std::unique_ptr<TransformUpdateSystem> _transformUpdateSystem;
 

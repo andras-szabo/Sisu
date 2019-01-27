@@ -18,8 +18,8 @@ class BrickRenderer : public D3DRenderer
 public:
 	static const UINT MaxInstancedObjectCount = 4096;
 
-	BrickRenderer(WindowManager* windowManager, GameTimer* gameTimer, 
-		Arena<GameObject>* bricks) :
+	BrickRenderer(WindowManager* const windowManager, GameTimer* const gameTimer, 
+		Arena<GameObject>* const bricks) :
 		D3DRenderer(windowManager, gameTimer),
 		_bricks (bricks)
 	{

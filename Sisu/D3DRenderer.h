@@ -25,7 +25,7 @@ public:
 	static const int SwapChainBufferCount = 2;
 	static const int FrameResourceCount = 3;
 
-	D3DRenderer(WindowManager* windowManager, GameTimer* gameTimer) :
+	D3DRenderer(WindowManager* const windowManager, GameTimer* const gameTimer) :
 		_windowManager(windowManager),
 		_gameTimer(gameTimer)
 	{
@@ -102,6 +102,6 @@ protected:
 	D3D12_RECT _scissorRect;
 
 	std::unique_ptr<D3DLogger> _logger;
-	WindowManager* _windowManager;
-	GameTimer* _gameTimer;
+	WindowManager* const _windowManager;
+	GameTimer* const _gameTimer;
 };
