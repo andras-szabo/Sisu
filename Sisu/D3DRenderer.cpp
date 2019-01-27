@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "D3DRenderer.h"
+#include "ICameraService.h"
 
 bool D3DRenderer::Init()
 {
@@ -129,6 +130,8 @@ void D3DRenderer::OnResize()
 	FlushCommandQueue();
 
 	SetupViewport();
+	
+	_cameraService->OnResize(_windowManager->AspectRatio());
 }
 
 void D3DRenderer::Init_00_CreateDXGIFactory()

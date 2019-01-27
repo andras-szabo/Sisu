@@ -9,6 +9,7 @@
 #include "Arena.h"
 #include "GameObject.h"
 #include "TransformUpdateSystem.h"
+#include "ICameraService.h"
 
 class SisuApp
 {
@@ -49,9 +50,10 @@ protected:
 	bool InitGameTimer();
 
 	bool InitInputService(GameTimer* const gt);
+	bool InitCameraService(IInputService* const inputService);
 	bool InitWindowManager(IInputService* const inputService, int width, int height, const std::wstring& title);
-	bool InitRenderer(WindowManager* const windowManager, GameTimer* const gt, 
-					  Arena<GameObject>* const arena, IInputService* const inputService);
+	bool InitRenderer(WindowManager* const windowManager, GameTimer* const gt,
+						Arena<GameObject>* const arena, ICameraService* const cameraService);
 
 	bool InitTransformUpdateSystem();
 
@@ -66,6 +68,7 @@ protected:
 	std::unique_ptr<WindowManager> _windowManager;
 	std::unique_ptr<IRenderer> _renderer;
 	std::unique_ptr<IInputService> _inputService;
+	std::unique_ptr<ICameraService> _cameraService;
 
 	std::unique_ptr<TransformUpdateSystem> _transformUpdateSystem;
 

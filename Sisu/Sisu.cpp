@@ -2,6 +2,7 @@
 #include "Sisu.h"
 #include "BrickRenderer.h"
 #include "InputService.h"
+#include "CameraService.h"
 
 bool SisuApp::Init(int width, int height, const std::wstring& title)
 {
@@ -11,8 +12,9 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 
 	success &= InitGameTimer();
 	success &= InitInputService(_gameTimer.get());
+	success &= InitCameraService(_inputService.get());
 	success &= InitWindowManager(_inputService.get(), width, height, title);
-	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get(), _inputService.get());
+	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get(), _cameraService.get());
 
 	success &= InitTransformUpdateSystem();
 
@@ -64,6 +66,12 @@ bool SisuApp::InitInputService(GameTimer* const gt)
 	return _inputService != nullptr;
 }
 
+bool SisuApp::InitCameraService(IInputService* const inputService)
+{
+	_cameraService = std::make_unique<CameraService>(inputService);
+	return _cameraService != nullptr;
+}
+
 bool SisuApp::InitWindowManager(IInputService* const inputService, int width, int height, const std::wstring& title)
 {
 	_windowManager = std::make_unique<WindowManager>(*this, inputService, width, height, title);
@@ -71,9 +79,9 @@ bool SisuApp::InitWindowManager(IInputService* const inputService, int width, in
 }
 
 bool SisuApp::InitRenderer(WindowManager* const windowManager, GameTimer* const gt, 
-						   Arena<GameObject>* const arena, IInputService* const inputService)
+						   Arena<GameObject>* const arena, ICameraService* const camService)
 {
-	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena, inputService);
+	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena, camService);
 	return _renderer->Init();
 }
 

@@ -19,15 +19,20 @@
 #include "GameTimer.h"
 #include "FrameResource.h"
 
+class ICameraService;
+
 class D3DRenderer : public IRenderer
 {
 public:
 	static const int SwapChainBufferCount = 2;
 	static const int FrameResourceCount = 3;
 
-	D3DRenderer(WindowManager* const windowManager, GameTimer* const gameTimer) :
+	D3DRenderer(WindowManager* const windowManager, 
+				GameTimer* const gameTimer, 
+				ICameraService* const cameraService):
 		_windowManager(windowManager),
-		_gameTimer(gameTimer)
+		_gameTimer(gameTimer),
+		_cameraService(cameraService)
 	{
 	}
 
@@ -104,4 +109,5 @@ protected:
 	std::unique_ptr<D3DLogger> _logger;
 	WindowManager* const _windowManager;
 	GameTimer* const _gameTimer;
+	ICameraService* const _cameraService;
 };

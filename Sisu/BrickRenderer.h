@@ -4,7 +4,7 @@
 #include "GeometryGenerator.h"
 #include "Arena.h"
 #include "GameObject.h"
-#include "Camera.h"
+#include "ICameraService.h"
 
 class GameTimer;
 class GameObject;
@@ -22,10 +22,9 @@ public:
 	BrickRenderer(WindowManager* const windowManager, 
 		GameTimer* const gameTimer, 
 		Arena<GameObject>* const bricks,
-		IInputService* const inputService) :
-		D3DRenderer(windowManager, gameTimer),
-		_bricks (bricks),
-		_inputService (inputService)
+		ICameraService* const cameraService) :
+		D3DRenderer(windowManager, gameTimer, cameraService),
+		_bricks (bricks)
 	{
 	}
 
@@ -34,9 +33,6 @@ public:
 	virtual void Update(const GameTimer& gt) override;
 	virtual void Draw(const GameTimer& gt) override;
 	virtual void SetWireframe(bool state) override { _isWireframe = state; }
-
-protected:
-	virtual void OnResize() override;
 
 private:
 	void BuildDescriptorHeaps();
@@ -48,9 +44,8 @@ private:
 	void BuildPSOs();
 
 	void DrawBricks(ID3D12GraphicsCommandList* cmdList);
-	void UpdateCamera(const GameTimer& gt);
 	void UpdateInstanceData();
-	void UpdateMainPassCB(const GameTimer& gt);
+	void UpdateMainPassCB(const GameTimer& gt, D3DCamera* activeCamera);
 
 	UINT AddToVertexBuffer(const GeometryGenerator::MeshData& mesh,
 		std::vector<BrickVertex>& vertices,
@@ -60,10 +55,6 @@ private:
 	DirectX::XMMATRIX ToXMMatrix(const Sisu::Matrix4& matrix) const;
 
 private:
-	//DirectX::XMFLOAT3 _eyePos = { 0.0f, 0.0f, 0.0f };
-	//DirectX::XMFLOAT4X4 _viewMatrix = MathHelper::Identity4x4();
-	//DirectX::XMFLOAT4X4 _projMatrix = MathHelper::Identity4x4();
-
 	std::vector<D3D12_INPUT_ELEMENT_DESC> _inputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>> _shaders;
 	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> _geometries;
@@ -75,11 +66,8 @@ private:
 	PassConstants _mainPassCB;
 
 	Arena<GameObject>* _bricks;
-	IInputService* _inputService;
+
 	int _dirtyFrameCount = FrameResourceCount;
 	bool _isWireframe;
 	UINT _drawableObjectCount = 0;
-
-	//Camera related
-	D3DCamera _camera;
 };
