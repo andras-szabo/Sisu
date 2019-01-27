@@ -180,12 +180,14 @@ LRESULT WindowManager::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		case WM_MBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 			_inputService->OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			SetCapture(_hMainWnd);
 			return 0;
 
 		case WM_LBUTTONUP:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONUP:
 			_inputService->OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			ReleaseCapture();
 			return 0;
 
 		case WM_MOUSEMOVE:

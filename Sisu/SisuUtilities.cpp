@@ -33,6 +33,19 @@ namespace Sisu
 		return Sisu::Vector3(vec.x * s, vec.y * s, vec.z * s);
 	}
 
+	//TODO = somehow note that this is funky: multiplying a vec3 by a m4x4?!
+	//	   => so we ignore the 4th row and col in the matrix
+	Sisu::Vector3 operator*(const Sisu::Vector3& vec, const Sisu::Matrix4& m)
+	{
+		Sisu::Vector3 v;
+
+		v.x = (vec.x * m.r0.x) + (vec.y * m.r1.x) + (vec.z * m.r2.x);
+		v.y = (vec.x * m.r0.y) + (vec.y * m.r1.y) + (vec.z * m.r2.y);
+		v.z = (vec.x * m.r0.z) + (vec.y * m.r1.z) + (vec.z * m.r2.z);
+
+		return v;
+	}
+
 	Sisu::Matrix4 operator*(const Sisu::Matrix4& a, const Sisu::Matrix4& b)
 	{
 		Sisu::Vector4 r0, r1, r2, r3;

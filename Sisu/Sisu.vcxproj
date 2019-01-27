@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="Arena.h" />
     <ClInclude Include="BrickRenderer.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="D3DLogger.h" />
     <ClInclude Include="D3DRenderer.h" />
     <ClInclude Include="d3dUtil.h" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BrickRenderer.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="D3DLogger.cpp" />
     <ClCompile Include="D3DRenderer.cpp" />
     <ClCompile Include="d3dUtil.cpp" />

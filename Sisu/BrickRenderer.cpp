@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "BrickRenderer.h"
+#include "InputService.h"
 
 bool BrickRenderer::Init()
 {
@@ -39,24 +40,43 @@ void BrickRenderer::Update(const GameTimer& gt)
 
 void BrickRenderer::UpdateCamera(const GameTimer& gt)
 {
-	// Convert spherical to Cartesian coordinates
-	_eyePos.x = _radius * sinf(_phi) * cosf(_theta);
-	_eyePos.y = _radius * cosf(_phi);
-	_eyePos.z = _radius * sinf(_phi) * sinf(_theta);
+	static Sisu::Vector3 inputAxes;
+	static Sisu::Vector3 inputEuler;
 
-	// Build the view matrix
-	DirectX::XMVECTOR camPos = DirectX::XMVectorSet(_eyePos.x, _eyePos.y, _eyePos.z, 1.0f);
-	DirectX::XMVECTOR target = DirectX::XMVectorZero();
-	DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	auto a = _inputService->GetKey(KeyCode::A);
+	auto d = _inputService->GetKey(KeyCode::D);
+	auto s = _inputService->GetKey(KeyCode::S);
+	auto w = _inputService->GetKey(KeyCode::W);
+	auto q = _inputService->GetKey(KeyCode::Q);
+	auto e = _inputService->GetKey(KeyCode::E);
+	auto r = _inputService->GetKey(KeyCode::R);
+	auto f = _inputService->GetKey(KeyCode::F);
 
-	DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(camPos, target, up);
-	DirectX::XMStoreFloat4x4(&_viewMatrix, view);
+	inputAxes.x = (a ? -1 : 0) + (d ? 1 : 0);
+	inputAxes.z = (s ? -1 : 0) + (w ? 1 : 0);
+	inputAxes.y = (f ? -1 : 0) + (r ? 1 : 0);
+
+	inputEuler.z = (e ? -45.0 : 0) + (q ? 45.0 : 0);
+
+	if (_inputService->GetMouseButton(0))
+	{
+		auto mouseDelta = _inputService->GetMouseDelta();
+		inputEuler.y = mouseDelta.x; 
+		inputEuler.x = mouseDelta.y;
+	}
+	else
+	{
+		inputEuler.x = 0.0f;
+		inputEuler.y = 0.0f;
+	}
+
+	_camera.Update(gt, inputAxes, inputEuler);
 }
 
 void BrickRenderer::UpdateMainPassCB(const GameTimer& gt)
 {
-	DirectX::XMMATRIX viewMatrix = DirectX::XMLoadFloat4x4(&_viewMatrix);
-	DirectX::XMMATRIX projectionMatrix = DirectX::XMLoadFloat4x4(&_projMatrix);
+	DirectX::XMMATRIX viewMatrix = DirectX::XMLoadFloat4x4(_camera.ViewMatrix());
+	DirectX::XMMATRIX projectionMatrix = DirectX::XMLoadFloat4x4(_camera.ProjectionMatrix());
 
 	DirectX::XMMATRIX viewProj = DirectX::XMMatrixMultiply(viewMatrix, projectionMatrix);
 	DirectX::XMMATRIX inverseView = DirectX::XMMatrixInverse(&DirectX::XMMatrixDeterminant(viewMatrix), viewMatrix);
@@ -70,7 +90,7 @@ void BrickRenderer::UpdateMainPassCB(const GameTimer& gt)
 	DirectX::XMStoreFloat4x4(&_mainPassCB.viewProj, DirectX::XMMatrixTranspose(viewProj));
 	DirectX::XMStoreFloat4x4(&_mainPassCB.invViewProj, DirectX::XMMatrixTranspose(inverseViewProj));
 
-	_mainPassCB.eyePosW = _eyePos;
+	_mainPassCB.eyePosW = _camera.Position();
 
 	auto windowDimensions = _windowManager->Dimensions();
 	_mainPassCB.renderTargetSize = DirectX::XMFLOAT2((float)windowDimensions.first, (float)windowDimensions.second);
@@ -166,7 +186,7 @@ void BrickRenderer::OnResize()
 	D3DRenderer::OnResize();
 	DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi,
 		_windowManager->AspectRatio(), 1.0f, 1000.0f);
-	DirectX::XMStoreFloat4x4(&_projMatrix, projectionMatrix);
+	_camera.OnResize(projectionMatrix);
 }
 
 void BrickRenderer::BuildShadersAndInputLayout()

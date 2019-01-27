@@ -132,6 +132,7 @@ namespace Sisu
 	// Arithmetics & stuff
 	bool Approx(float a, float b, float e = 0.000001);
 	Sisu::Vector3 operator*(const Sisu::Vector3& vec, float s);
+	Sisu::Vector3 operator*(const Sisu::Vector3& vec, const Sisu::Matrix4& m);
 	Sisu::Matrix4 operator*(const Sisu::Matrix4& a, const Sisu::Matrix4& b);
 	Sisu::Quat operator*(const Sisu::Quat& a, const Sisu::Quat& b);
 	bool operator==(const Sisu::Quat& a, const Sisu::Quat& b);

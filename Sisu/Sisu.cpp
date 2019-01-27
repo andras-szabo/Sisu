@@ -12,7 +12,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	success &= InitGameTimer();
 	success &= InitInputService(_gameTimer.get());
 	success &= InitWindowManager(_inputService.get(), width, height, title);
-	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get());
+	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get(), _inputService.get());
 
 	success &= InitTransformUpdateSystem();
 
@@ -21,8 +21,8 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	auto& testObject = (*_gameObjects)[parentIndex];
 
 	testObject.isVisible = true;
-	testObject.velocityPerSec = Sisu::Vector3(0.05, 0.0, 0.0);
-	testObject.eulerRotPerSec = Sisu::Vector3(0.0, 0.0, 90.0);
+	testObject.velocityPerSec = Sisu::Vector3(0.0, 0.0, 0.0);
+	//testObject.eulerRotPerSec = Sisu::Vector3(0.0, 0.0, 90.0);
 	testObject.localScale = Sisu::Vector3(1.0, 1.0, 1.0);
 
 	auto childIndex = GameObject::AddChild(*_gameObjects, parentIndex, GameObject());
@@ -30,7 +30,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 
 	child.isVisible = true;
 	child.localPosition = Sisu::Vector3(-2.0, 0.0, 0.0);
-	child.eulerRotPerSec = Sisu::Vector3(0.0, 45.0, 0.0);
+	//child.eulerRotPerSec = Sisu::Vector3(0.0, 45.0, 0.0);
 	child.localScale = Sisu::Vector3(0.5, 0.5, 0.5);
 	child.color = Sisu::Color::Red();
 
@@ -70,9 +70,10 @@ bool SisuApp::InitWindowManager(IInputService* const inputService, int width, in
 	return _windowManager->IsSetup();
 }
 
-bool SisuApp::InitRenderer(WindowManager* const windowManager, GameTimer* const gt, Arena<GameObject>* const arena)
+bool SisuApp::InitRenderer(WindowManager* const windowManager, GameTimer* const gt, 
+						   Arena<GameObject>* const arena, IInputService* const inputService)
 {
-	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena);
+	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena, inputService);
 	return _renderer->Init();
 }
 
@@ -126,7 +127,7 @@ void SisuApp::Update()
 	}
 
 	_renderer->Update(gt);
-	_renderer->SetWireframe(_inputService->GetKey(0x57));
+	_renderer->SetWireframe(_inputService->GetKey(KeyCode::One));
 }
 
 void SisuApp::Draw()

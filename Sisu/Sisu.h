@@ -29,7 +29,7 @@ protected:
 	SisuApp& operator=(const SisuApp&) = delete;
 
 public:
-	HINSTANCE GetAppInstanceHandle() const { return _hAppInstance; }
+	HINSTANCE GetAppInstanceHandle() const { PI; return _hAppInstance; }
 	HWND MainWindowHandle() const { return _windowManager->MainWindowHandle(); }
 	float AspectRatio() const { return _windowManager->AspectRatio(); }
 	bool IsRendererSetup() const { return _renderer != nullptr && _renderer->IsSetup(); }
@@ -49,7 +49,8 @@ protected:
 
 	bool InitInputService(GameTimer* const gt);
 	bool InitWindowManager(IInputService* const inputService, int width, int height, const std::wstring& title);
-	bool InitRenderer(WindowManager* const windowManager, GameTimer* const gt, Arena<GameObject>* const arena);
+	bool InitRenderer(WindowManager* const windowManager, GameTimer* const gt, 
+					  Arena<GameObject>* const arena, IInputService* const inputService);
 
 	bool InitTransformUpdateSystem();
 
