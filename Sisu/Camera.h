@@ -25,7 +25,7 @@ private:
 public:
 	float speedUnitPerSecond = 2.0f;
 	float rotationSensitivity = 50.0f;
-	float FOV_Y = 60.0f;
+	float FOV_H = 100.0f;
 	float nearPlaneDistance = 0.3f;
 	float farPlaneDistance = 1000.0f;
 
