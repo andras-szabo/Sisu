@@ -33,7 +33,14 @@ public:
 	virtual void OnKeyDown(WPARAM virtualKeyCode) override;
 	virtual void OnKeyUp(WPARAM virtualKeyCode) override;
 
+	virtual void PostDraw() override
+	{
+		ResetMouseDelta();
+	}
+
 private:
+	void ResetMouseDelta();
+
 	GameTimer* const _gameTimer;
 	std::vector<unsigned long> _keyPressFrame;
 	std::vector<unsigned long> _keyReleaseFrame;

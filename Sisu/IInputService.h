@@ -37,4 +37,6 @@ public:
 
 	virtual void OnKeyDown(WPARAM virtualKeyCode) = 0;
 	virtual void OnKeyUp(WPARAM virtualKeyCode) = 0;
+
+	virtual void PostDraw() = 0;
 };

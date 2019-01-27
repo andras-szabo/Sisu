@@ -43,6 +43,7 @@ protected:
 	virtual void OnResize();
 	virtual void Update();
 	virtual void Draw();
+	virtual void PostDraw();
 
 	bool InitArenas();
 	bool InitGameTimer();

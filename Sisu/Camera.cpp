@@ -40,7 +40,9 @@ void D3DCamera::Update(const GameTimer& gt,
 	DirectX::XMStoreFloat4x4(&_viewMatrix, view);
 }
 
-void D3DCamera::OnResize(const DirectX::XMMATRIX& newProjectionMatrix)
+void D3DCamera::OnResize(float aspectRatio)
 {
-	DirectX::XMStoreFloat4x4(&_projectionMatrix, newProjectionMatrix);
+	DirectX::XMMATRIX projectionMatrix = 
+		DirectX::XMMatrixPerspectiveFovLH(FOV_Y * MathHelper::Pi / 180.0f, aspectRatio, nearPlaneDistance, farPlaneDistance);
+	DirectX::XMStoreFloat4x4(&_projectionMatrix, projectionMatrix);
 }

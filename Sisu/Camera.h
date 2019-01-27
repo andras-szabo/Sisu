@@ -17,14 +17,17 @@ public:
 	DirectX::XMFLOAT4X4* ViewMatrix() { return &_viewMatrix; }
 	DirectX::XMFLOAT4X4* ProjectionMatrix() { return &_projectionMatrix; }
 
-	void OnResize(const DirectX::XMMATRIX& newProjectionMatrix);
+	void OnResize(float aspectRatio);
 
 private:
 	DirectX::XMMATRIX ToXMMatrix(const Sisu::Matrix4& m) const;
 
 public:
 	float speedUnitPerSecond = 2.0f;
-	float rotationSensitivity = 2.0f;
+	float rotationSensitivity = 50.0f;
+	float FOV_Y = 60.0f;
+	float nearPlaneDistance = 0.3f;
+	float farPlaneDistance = 1000.0f;
 
 private:
 	DirectX::XMFLOAT4X4 _viewMatrix;

@@ -1,14 +1,16 @@
 #include "stdafx.h"
 #include "InputService.h"
-#define PI 3.14159265
 
 void InputService::OnMouseMove(WPARAM buttonState, int x, int y)
 {
-	_lastMousePos.x = _currentMousePos.x;
-	_lastMousePos.y = _currentMousePos.y;
-
 	_currentMousePos.x = x;
 	_currentMousePos.y = y;
+}
+
+void InputService::ResetMouseDelta()
+{
+	_lastMousePos.x = _currentMousePos.x;
+	_lastMousePos.y = _currentMousePos.y;
 }
 
 IInputService::Point InputService::GetMouseDelta() const

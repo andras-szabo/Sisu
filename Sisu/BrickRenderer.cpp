@@ -56,7 +56,7 @@ void BrickRenderer::UpdateCamera(const GameTimer& gt)
 	inputAxes.z = (s ? -1 : 0) + (w ? 1 : 0);
 	inputAxes.y = (f ? -1 : 0) + (r ? 1 : 0);
 
-	inputEuler.z = (e ? -45.0 : 0) + (q ? 45.0 : 0);
+	inputEuler.z = (e ? -1.0 : 0) + (q ? 1.0 : 0);
 
 	if (_inputService->GetMouseButton(0))
 	{
@@ -184,9 +184,7 @@ void BrickRenderer::DrawBricks(ID3D12GraphicsCommandList* cmdList)
 void BrickRenderer::OnResize()
 {
 	D3DRenderer::OnResize();
-	DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi,
-		_windowManager->AspectRatio(), 1.0f, 1000.0f);
-	_camera.OnResize(projectionMatrix);
+	_camera.OnResize(_windowManager->AspectRatio());
 }
 
 void BrickRenderer::BuildShadersAndInputLayout()

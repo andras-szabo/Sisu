@@ -105,6 +105,7 @@ int SisuApp::Run()
 				CalculateFrameStats();
 				Update();
 				Draw();
+				PostDraw();	//TODO better name
 			}
 			else
 			{
@@ -133,6 +134,11 @@ void SisuApp::Update()
 void SisuApp::Draw()
 {
 	_renderer->Draw(*_gameTimer.get());
+}
+
+void SisuApp::PostDraw()
+{
+	_inputService->PostDraw();
 }
 
 void SisuApp::Pause(bool newState)
