@@ -126,6 +126,7 @@ void SisuApp::Update()
 	}
 
 	_renderer->Update(gt);
+	_renderer->SetWireframe(_inputService->GetKey(0x57));
 }
 
 void SisuApp::Draw()

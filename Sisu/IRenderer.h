@@ -9,4 +9,5 @@ struct IRenderer
 	virtual void Update(const GameTimer& gt) = 0;
 	virtual void Draw(const GameTimer& gt) = 0;
 	virtual void SetDirty() = 0;
+	virtual void SetWireframe(bool state) = 0;
 };

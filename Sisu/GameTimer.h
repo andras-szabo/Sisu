@@ -16,6 +16,7 @@ public:
 	float DeltaTimeSeconds() const;
 	float SecondsSinceReset() const;
 	bool IsPaused() const;
+	unsigned long FrameCount() const;
 
 	void Reset();	// call before message loop <--- TODO: Better name
 	void Unpause();

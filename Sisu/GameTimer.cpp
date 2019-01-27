@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "GameTimer.h"
 
+unsigned long GameTimer::FrameCount() const
+{
+	return _frameCount;
+}
+
 float GameTimer::DeltaTimeSeconds() const
 {
 	return _deltaTimeSeconds;

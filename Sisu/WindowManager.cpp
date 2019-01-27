@@ -155,6 +155,8 @@ void WindowManager::MarkWindowResizeStartOrStop(bool start)
 
 LRESULT WindowManager::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	const static LPARAM isRepeatKey = (1 << 30);
+
 	switch (msg)
 	{
 		case WM_ACTIVATE: OnWindowActivate(wParam); return 0;
@@ -191,7 +193,10 @@ LRESULT WindowManager::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			return 0;
 
 		case WM_KEYDOWN:
-			_inputService->OnKeyDown(wParam);
+			if (!(lParam & isRepeatKey))
+			{
+				_inputService->OnKeyDown(wParam);
+			}
 			return 0;
 
 		case WM_KEYUP:
