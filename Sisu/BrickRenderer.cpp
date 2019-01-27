@@ -231,7 +231,7 @@ DirectX::XMMATRIX BrickRenderer::ToXMMatrix(const Sisu::Matrix4& m) const
 void BrickRenderer::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
-	auto box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 3);
+	auto box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 0);
 
 	UINT boxVertexOffset = 0;
 	UINT boxIndexOffset = 0;
@@ -377,7 +377,8 @@ void BrickRenderer::BuildPSOs()
 
 	ThrowIfFailed(_d3dDevice->CreateGraphicsPipelineState(&instancedPSOdesc, IID_PPV_ARGS(&_PSOs["instanced"])));
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = instancedPSOdesc;
-	opaqueWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	ThrowIfFailed(_d3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&_PSOs["instanced_wireframe"])))
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC wireframePSOdesc = instancedPSOdesc;
+	wireframePSOdesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	wireframePSOdesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	ThrowIfFailed(_d3dDevice->CreateGraphicsPipelineState(&wireframePSOdesc, IID_PPV_ARGS(&_PSOs["instanced_wireframe"])))
 }
