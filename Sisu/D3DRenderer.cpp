@@ -345,10 +345,15 @@ void D3DRenderer::SetupViewport()
 
 	_screenViewport.TopLeftX = 0;
 	_screenViewport.TopLeftY = 0;
-	_screenViewport.Width = static_cast<float>(width);
+	_screenViewport.Width = static_cast<float>(width) / 2.0f;
 	_screenViewport.Height = static_cast<float>(height);
 	_screenViewport.MinDepth = 0.0f;
 	_screenViewport.MaxDepth = 1.0f;
+
+	_viewports.push_back(_screenViewport);
+	_viewports.push_back(_screenViewport);
+
+	_viewports[1].TopLeftX = static_cast<float>(width / 2.0f);
 
 	_scissorRect = { 0, 0, width, height };
 }

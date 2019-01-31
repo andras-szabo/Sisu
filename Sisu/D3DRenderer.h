@@ -105,6 +105,7 @@ protected:
 
 	D3D12_VIEWPORT _screenViewport;
 	D3D12_RECT _scissorRect;
+	std::vector<D3D12_VIEWPORT> _viewports;
 
 	std::unique_ptr<D3DLogger> _logger;
 	WindowManager* const _windowManager;

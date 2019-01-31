@@ -85,6 +85,7 @@ void BrickRenderer::UpdateInstanceData()
 				DirectX::XMMATRIX worldMatrix = ToXMMatrix(brick.transform);
 				FRObjectConstants objConstants(worldMatrix);
 				objConstants.color = DirectX::XMFLOAT4(brick.color.r, brick.color.g, brick.color.b, brick.color.a);
+				objConstants.localScale = DirectX::XMFLOAT3(brick.localScale.x, brick.localScale.y, brick.localScale.z);
 				currentInstanceBuffer->CopyData(bufferIndex++, objConstants);
 			}
 		}
@@ -104,7 +105,6 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	auto currentPSOID = _isWireframe ? "instanced_wireframe" : "instanced";
 	ThrowIfFailed(_commandList->Reset(commandAllocator.Get(), _PSOs[currentPSOID].Get()));
 
-	_commandList->RSSetViewports(1, &_screenViewport);
 	_commandList->RSSetScissorRects(1, &_scissorRect);
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
@@ -120,8 +120,14 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	auto passCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_cbvHeap->GetGPUDescriptorHandleForHeapStart());
 	passCBVhandle.Offset(passCBVindex, _CbvSrvUavDescriptorSize);
 
-	_commandList->SetGraphicsRootDescriptorTable(0, passCBVhandle);
-	DrawBricks(_commandList.Get());
+	//TODO: Get viewport from Camera; and update per-pass buffers accordingly
+	for (int i = 0; i < 2; ++i)
+	{
+		//_commandList->RSSetViewports(1, &_screenViewport);
+		_commandList->RSSetViewports(1, &_viewports[i]);
+		_commandList->SetGraphicsRootDescriptorTable(0, passCBVhandle);
+		DrawBricks(_commandList.Get());
+	}
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	ThrowIfFailed(_commandList->Close());

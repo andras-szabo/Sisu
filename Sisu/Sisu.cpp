@@ -19,6 +19,15 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	success &= InitTransformUpdateSystem();
 
 	//TODO proper setup
+	auto yetAnotherCubeIndex = GameObject::AddToArena(*_gameObjects, GameObject());
+	auto& yac = (*_gameObjects)[yetAnotherCubeIndex];
+
+	yac.isVisible = true;
+	yac.eulerRotPerSec = Sisu::Vector3(0.5, 0.5, 0.5);
+	yac.localScale = Sisu::Vector3(10.0f, 10.0f, 2.0f);
+	yac.localPosition = Sisu::Vector3(5.0f, 0.0f, 0.0f);
+	yac.color = Sisu::Color::Green();
+
 	auto parentIndex = GameObject::AddToArena(*_gameObjects, GameObject());
 	auto& testObject = (*_gameObjects)[parentIndex];
 
@@ -33,7 +42,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	child.isVisible = true;
 	child.localPosition = Sisu::Vector3(-2.0, 0.0, 0.0);
 	//child.eulerRotPerSec = Sisu::Vector3(0.0, 45.0, 0.0);
-	child.localScale = Sisu::Vector3(0.5, 0.5, 0.5);
+	child.localScale = Sisu::Vector3(1.0, 0.5, 1.0);
 	child.color = Sisu::Color::Red();
 
 	auto grandKidIndex = GameObject::AddChild(*_gameObjects, childIndex, GameObject());
