@@ -23,11 +23,14 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	auto h = static_cast<float>(height);
 
 	D3DCamera topLeft;		topLeft.SetViewport(Sisu::Vector4(0.0f, 0.0f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
-	//D3DCamera topRight;		topRight.SetViewport(Sisu::Vector4(0.5f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
-	//D3DCamera bottomRight;	bottomRight.SetViewport(Sisu::Vector4(0.5f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
-	//D3DCamera bottomLeft;	bottomLeft.SetViewport(Sisu::Vector4(0.0f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	D3DCamera topRight;		topRight.SetViewport(Sisu::Vector4(0.5f, 0.0f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	topRight.SetPosition(Sisu::Vector3(0.0f, 12.0f, 0.0f));
+	topRight.SetRotation(Sisu::Vector3(90.0f, 0.0f, 0.0f));
 
-	std::vector<D3DCamera> cameras{ topLeft };
+	D3DCamera bottomRight;	bottomRight.SetViewport(Sisu::Vector4(0.5f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	D3DCamera bottomLeft;	bottomLeft.SetViewport(Sisu::Vector4(0.0f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+
+	std::vector<D3DCamera> cameras{ topLeft, topRight };
 	_cameraService->SetCameras(cameras);
 
 	//_cameraService->SetCameras(std::vector<D3DCamera> { topLeft, topRight, bottomLeft, bottomRight });

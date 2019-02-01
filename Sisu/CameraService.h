@@ -32,4 +32,5 @@ private:
 	IInputService* const _inputService;
 	WindowManager* const _windowManager;
 	std::vector<D3DCamera> _cameras;
+	std::size_t _activeCameraIndex = 0;
 };

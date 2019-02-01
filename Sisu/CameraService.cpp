@@ -51,5 +51,5 @@ void CameraService::Update(const GameTimer& gt)
 		inputEuler.y = 0.0f;
 	}
 
-	_cameras[0].Update(gt, inputAxes, inputEuler);
+	_cameras[_activeCameraIndex].Update(gt, inputAxes, inputEuler);
 }

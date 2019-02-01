@@ -38,7 +38,7 @@ void BrickRenderer::Update(const GameTimer& gt)
 
 }
 
-void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, const D3DCamera& activeCamera)
+void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, const D3DCamera& activeCamera, int index)
 {
 	DirectX::XMMATRIX viewMatrix = DirectX::XMLoadFloat4x4(&activeCamera.ViewMatrix());
 	DirectX::XMMATRIX projectionMatrix = DirectX::XMLoadFloat4x4(&activeCamera.ProjectionMatrix());
@@ -66,7 +66,7 @@ void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, const D3DCamera& activ
 	_mainPassCB.deltaTime = gt.DeltaTimeSeconds();
 
 	auto currPassCB = _currentFrameResource->passConstantBuffer.get();
-	currPassCB->CopyData(0, _mainPassCB);
+	currPassCB->CopyData(index, _mainPassCB);
 }
 
 void BrickRenderer::UpdateInstanceData()
@@ -105,11 +105,24 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	auto currentPSOID = _isWireframe ? "instanced_wireframe" : "instanced";
 	ThrowIfFailed(_commandList->Reset(commandAllocator.Get(), _PSOs[currentPSOID].Get()));
 
+	auto cameraCount = 0;
+	for (const auto& camera : _cameraService->GetActiveCameras())
+	{
+		UpdateMainPassCB(gt, camera, cameraCount);
+		cameraCount++;
+	}
+
 	_commandList->RSSetScissorRects(1, &_scissorRect);
 
-	//TODO - mindful of other cams
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-	_commandList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::CornflowerBlue, 0, nullptr);
+
+	//TODO: from camera
+	D3D12_RECT topLeft; topLeft.left = 0; topLeft.top = 0; topLeft.bottom = 300; topLeft.right = 400;
+	D3D12_RECT topRight; topRight.left = 400; topRight.top = 0; topRight.bottom = 300; topRight.right = 800;
+
+	_commandList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::CornflowerBlue, 1, &topLeft);
+	_commandList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::Beige, 1, &topRight);
+
 	_commandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 	_commandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
@@ -117,18 +130,19 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 	_commandList->SetGraphicsRootSignature(_instancedRootSignature.Get());
 
+	cameraCount = 0;
 	for (const auto& camera : _cameraService->GetActiveCameras())
 	{
-		UpdateMainPassCB(gt, camera);
-
-		auto passCBVindex = _currentFrameResourceIndex;
+		auto passCBVindex = (_currentFrameResourceIndex * 2) + cameraCount;
 		auto passCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_cbvHeap->GetGPUDescriptorHandleForHeapStart());
 		passCBVhandle.Offset(passCBVindex, _CbvSrvUavDescriptorSize);
 
 		//_commandList->RSSetViewports(1, &_screenViewport);
 		_commandList->RSSetViewports(1, &camera.viewport);
 		_commandList->SetGraphicsRootDescriptorTable(0, passCBVhandle);
+
 		DrawBricks(_commandList.Get());
+		cameraCount++;
 	}
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -177,9 +191,10 @@ void BrickRenderer::BuildRootSignatures()
 {
 	// First, for instanced: we'll have 2 parameters: 
 	//		= a descriptor table with 1 element for the per pass constant buffer
+	//				= update: 2 elements, b/c 2 cams
 	//		= a root descriptor for the instance data
 	CD3DX12_DESCRIPTOR_RANGE cbvTablePerPass;
-	cbvTablePerPass.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);	// base register 0
+	cbvTablePerPass.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 2, 0);	// base register 0
 
 	CD3DX12_ROOT_PARAMETER slotRootParams[2];
 	slotRootParams[0].InitAsDescriptorTable(1, &cbvTablePerPass);
@@ -284,7 +299,8 @@ UINT BrickRenderer::AddToVertexBuffer(const GeometryGenerator::MeshData& mesh,
 
 void BrickRenderer::BuildFrameResources()
 {
-	UINT passCount = 1;
+	//2 passes b/c 2 cams
+	UINT passCount = 2;
 	UINT cbObjectCount = 0;
 	for (int i = 0; i < FrameResourceCount; ++i)
 	{
@@ -294,11 +310,10 @@ void BrickRenderer::BuildFrameResources()
 	}
 }
 
-// For now, we'll only build heap enough for 2 per-pass views,
-// because that's all we're going to use constant buffer for.
 void BrickRenderer::BuildDescriptorHeaps()
 {
-	UINT numDescriptors = FrameResourceCount;		// one view per frame resource, that's it
+	//Say we have 2 cams per frame resource
+	UINT numDescriptors = FrameResourceCount * 2;
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDescriptor;
 
 	cbvHeapDescriptor.NumDescriptors = numDescriptors;
@@ -310,24 +325,26 @@ void BrickRenderer::BuildDescriptorHeaps()
 
 void BrickRenderer::BuildConstantBufferViews()
 {
-	UINT passCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
+	UINT64 passCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 
-	// The first 3 descriptors are the pass CBVs for each frame resource
 	for (int frameIndex = 0; frameIndex < FrameResourceCount; ++frameIndex)
 	{
 		auto passConstantBuffer = _frameResources[frameIndex]->passConstantBuffer->Resource();
 		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passConstantBuffer->GetGPUVirtualAddress();
-
+		
 		// Offset to the pass constant buffer view in the descriptor heap:
-		int heapIndex = frameIndex;
-		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_cbvHeap->GetCPUDescriptorHandleForHeapStart());
-		handle.Offset(heapIndex, _CbvSrvUavDescriptorSize);
+		for (UINT64 cameraIndex = 0; cameraIndex < 2; ++cameraIndex)
+		{
+			int cpuHeapIndex = cameraIndex + (frameIndex * 2);
+			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_cbvHeap->GetCPUDescriptorHandleForHeapStart());
+			handle.Offset(cpuHeapIndex, _CbvSrvUavDescriptorSize);
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-		cbvDesc.BufferLocation = cbAddress;
-		cbvDesc.SizeInBytes = passCBByteSize;
+			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+			cbvDesc.BufferLocation = cbAddress + (cameraIndex * passCBByteSize);
+			cbvDesc.SizeInBytes = passCBByteSize;
 
-		_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
+			_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
+		}
 	}
 }
 

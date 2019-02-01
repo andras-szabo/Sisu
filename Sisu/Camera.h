@@ -21,6 +21,16 @@ public:
 				const Sisu::Vector3& inputAxes,
 			    const Sisu::Vector3& inputEuler);
 
+	void SetPosition(const Sisu::Vector3& vec)
+	{
+		_position = vec;
+	}
+
+	void SetRotation(const Sisu::Vector3& euler)
+	{
+		_rotation = Sisu::Quat::Euler(euler);
+	}
+
 	DirectX::XMFLOAT3 Position() const { return DirectX::XMFLOAT3(_position.x, _position.y, _position.z); }
 	const DirectX::XMFLOAT4X4& ViewMatrix() const { return _viewMatrix; }
 	const DirectX::XMFLOAT4X4& ProjectionMatrix() const { return _projectionMatrix; }
@@ -30,6 +40,7 @@ public:
 private:
 	DirectX::XMMATRIX ToXMMatrix(const Sisu::Matrix4& m) const;
 	void UpdateViewport(float newWidth, float newHeight);
+	void UpdateTransform();
 
 public:
 	float speedUnitPerSecond = 2.0f;

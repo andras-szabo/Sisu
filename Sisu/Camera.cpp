@@ -40,6 +40,20 @@ void D3DCamera::Update(const GameTimer& gt,
 	DirectX::XMStoreFloat4x4(&_viewMatrix, view);
 }
 
+void D3DCamera::UpdateTransform()
+{
+	_rotationMatrix = Sisu::Matrix4::FromQuat(_rotation);
+	Sisu::Matrix4 translateMatrix(Sisu::Vector4(1.0, 0.0, 0.0, 0.0),
+		Sisu::Vector4(0.0, 1.0, 0.0, 0.0),
+		Sisu::Vector4(0.0, 0.0, 1.0, 0.0),
+		Sisu::Vector4(_position.x, _position.y, _position.z, 1.0));
+	
+	_transform = _rotationMatrix * translateMatrix;
+
+	DirectX::XMMATRIX view = DirectX::XMMatrixInverse(nullptr, ToXMMatrix(_transform));
+	DirectX::XMStoreFloat4x4(&_viewMatrix, view);
+}
+
 void D3DCamera::OnResize(float width, float height)
 {
 	auto aspectRatio = width / height;
@@ -49,6 +63,7 @@ void D3DCamera::OnResize(float width, float height)
 	DirectX::XMStoreFloat4x4(&_projectionMatrix, projectionMatrix);
 
 	UpdateViewport(width, height);
+	UpdateTransform();
 }
 
 void D3DCamera::UpdateViewport(float newWidth, float newHeight)
