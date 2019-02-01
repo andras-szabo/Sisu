@@ -27,23 +27,26 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	yac.localScale = Sisu::Vector3(10.0f, 10.0f, 2.0f);
 	yac.localPosition = Sisu::Vector3(5.0f, 0.0f, 0.0f);
 	yac.color = Sisu::Color::Green();
+	yac.borderColor = Sisu::Color::Blue();
 
 	auto parentIndex = GameObject::AddToArena(*_gameObjects, GameObject());
 	auto& testObject = (*_gameObjects)[parentIndex];
 
 	testObject.isVisible = true;
 	testObject.velocityPerSec = Sisu::Vector3(0.0, 0.0, 0.0);
-	//testObject.eulerRotPerSec = Sisu::Vector3(0.0, 0.0, 90.0);
+	testObject.eulerRotPerSec = Sisu::Vector3(0.0, 0.0, 90.0);
 	testObject.localScale = Sisu::Vector3(1.0, 1.0, 1.0);
+	testObject.borderColor = Sisu::Color::White();
 
 	auto childIndex = GameObject::AddChild(*_gameObjects, parentIndex, GameObject());
 	auto& child = (*_gameObjects)[childIndex];
 
 	child.isVisible = true;
 	child.localPosition = Sisu::Vector3(-2.0, 0.0, 0.0);
-	//child.eulerRotPerSec = Sisu::Vector3(0.0, 45.0, 0.0);
+	child.eulerRotPerSec = Sisu::Vector3(0.0, 45.0, 0.0);
 	child.localScale = Sisu::Vector3(1.0, 0.5, 1.0);
 	child.color = Sisu::Color::Red();
+	child.borderColor = Sisu::Color::Black();
 
 	auto grandKidIndex = GameObject::AddChild(*_gameObjects, childIndex, GameObject());
 	auto& grandKid = (*_gameObjects)[grandKidIndex];
@@ -53,6 +56,7 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	grandKid.eulerRotPerSec = Sisu::Vector3(0.0, 22.5, 22.5);
 	grandKid.localScale = Sisu::Vector3(0.5, 2.5, 0.5);
 	grandKid.color = Sisu::Color::Black();
+	grandKid.borderColor = Sisu::Color::Yellow();
 
 	return success;
 }

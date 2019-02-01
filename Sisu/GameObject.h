@@ -176,6 +176,7 @@ public:
 	void RefreshTransform(Sisu::Matrix4* parentTransform);
 
 public:
+	//TODO: organize this nicely for alignment + only what's really needed
 	std::size_t childrenStartIndex = 0;
 	std::size_t childrenEndIndex = 0;
 	std::size_t parentIndex = 0;
@@ -194,4 +195,5 @@ public:
 	Sisu::Color color;
 	Sisu::Matrix4 transform;
 	Sisu::Quat rotQuat = Sisu::Quat::Identity();
+	Sisu::Color borderColor;
 };

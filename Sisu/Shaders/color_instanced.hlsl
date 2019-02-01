@@ -2,6 +2,7 @@ struct InstanceData
 {
 	float4x4 world;
 	float4 color;
+	float4 borderColor;
 	float3 localScale;
 };
 
@@ -36,6 +37,7 @@ struct VertexOut
 	float3 TexCoord : TEXCOORD0;
 	float3 LocScale : TEXCOORD1;
 	float4 Color : COLOR;
+	float4 BorderColor : TEXCOORD2;
 };
 
 VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
@@ -46,6 +48,7 @@ VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
 	vout.Color = gInstanceData[instanceID].color;
 	vout.TexCoord = vin.PosL;
 	vout.LocScale = gInstanceData[instanceID].localScale;
+	vout.BorderColor = gInstanceData[instanceID].borderColor;
 	return vout;
 }
 
@@ -55,7 +58,5 @@ float4 PS(VertexOut pin) : SV_Target
 	float isTopOrBottom = step(0.5 - (0.025 / pin.LocScale.y), abs(pin.TexCoord.y));
 	float isFrontOrBack = step(0.5 - (0.025 / pin.LocScale.z), abs(pin.TexCoord.z));
 	
-	float isBorder = step(2.0, isLeftOrRight + isTopOrBottom + isFrontOrBack);
-	
-	return pin.Color + float4(1, 1, 1, 1) * isBorder;
+	return lerp(pin.Color, pin.BorderColor, step(2.0, isLeftOrRight + isTopOrBottom + isFrontOrBack));
 }

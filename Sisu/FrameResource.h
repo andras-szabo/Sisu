@@ -17,7 +17,8 @@ struct FRObjectConstants
 
 	DirectX::XMFLOAT4X4 worldMatrix = MathHelper::Identity4x4();
 	DirectX::XMFLOAT4 color;
-	DirectX::XMFLOAT3 localScale;
+	DirectX::XMFLOAT4 borderColor;
+	DirectX::XMFLOAT3 localScale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 };
 
 struct PassConstants

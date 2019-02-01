@@ -85,6 +85,8 @@ void BrickRenderer::UpdateInstanceData()
 				DirectX::XMMATRIX worldMatrix = ToXMMatrix(brick.transform);
 				FRObjectConstants objConstants(worldMatrix);
 				objConstants.color = DirectX::XMFLOAT4(brick.color.r, brick.color.g, brick.color.b, brick.color.a);
+				objConstants.borderColor = DirectX::XMFLOAT4(brick.borderColor.r, brick.borderColor.g,
+															 brick.borderColor.b, brick.borderColor.a);
 				objConstants.localScale = DirectX::XMFLOAT3(brick.localScale.x, brick.localScale.y, brick.localScale.z);
 				currentInstanceBuffer->CopyData(bufferIndex++, objConstants);
 			}
