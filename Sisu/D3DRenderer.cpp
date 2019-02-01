@@ -129,9 +129,10 @@ void D3DRenderer::OnResize()
 	CloseAndExecuteCommandList();
 	FlushCommandQueue();
 
+	// TODO - cleanup - do the scissorRects only
 	SetupViewport();
 	
-	_cameraService->OnResize(_windowManager->AspectRatio());
+	_cameraService->OnResize();
 }
 
 void D3DRenderer::Init_00_CreateDXGIFactory()

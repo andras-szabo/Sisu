@@ -50,8 +50,8 @@ protected:
 	bool InitGameTimer();
 
 	bool InitInputService(GameTimer* const gt);
-	bool InitCameraService(IInputService* const inputService);
 	bool InitWindowManager(IInputService* const inputService, int width, int height, const std::wstring& title);
+	bool InitCameraService(IInputService* const inputService, WindowManager* const windowManager);
 	bool InitRenderer(WindowManager* const windowManager, GameTimer* const gt,
 						Arena<GameObject>* const arena, ICameraService* const cameraService);
 

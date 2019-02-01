@@ -45,7 +45,7 @@ private:
 
 	void DrawBricks(ID3D12GraphicsCommandList* cmdList);
 	void UpdateInstanceData();
-	void UpdateMainPassCB(const GameTimer& gt, D3DCamera* activeCamera);
+	void UpdateMainPassCB(const GameTimer& gt, const D3DCamera& activeCamera);
 
 	UINT AddToVertexBuffer(const GeometryGenerator::MeshData& mesh,
 		std::vector<BrickVertex>& vertices,

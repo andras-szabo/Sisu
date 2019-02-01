@@ -35,15 +35,13 @@ void BrickRenderer::Update(const GameTimer& gt)
 	_cameraService->Update(gt);
 	WaitForNextFrameResource();
 	UpdateInstanceData();
-	// TODO so main pass CB should be updated per-camera
-	// So let's move this closer to rendering
-	UpdateMainPassCB(gt, _cameraService->GetActiveCamera());
+
 }
 
-void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, D3DCamera* activeCamera)
+void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, const D3DCamera& activeCamera)
 {
-	DirectX::XMMATRIX viewMatrix = DirectX::XMLoadFloat4x4(activeCamera->ViewMatrix());
-	DirectX::XMMATRIX projectionMatrix = DirectX::XMLoadFloat4x4(activeCamera->ProjectionMatrix());
+	DirectX::XMMATRIX viewMatrix = DirectX::XMLoadFloat4x4(&activeCamera.ViewMatrix());
+	DirectX::XMMATRIX projectionMatrix = DirectX::XMLoadFloat4x4(&activeCamera.ProjectionMatrix());
 
 	DirectX::XMMATRIX viewProj = DirectX::XMMatrixMultiply(viewMatrix, projectionMatrix);
 	DirectX::XMMATRIX inverseView = DirectX::XMMatrixInverse(&DirectX::XMMatrixDeterminant(viewMatrix), viewMatrix);
@@ -57,7 +55,7 @@ void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, D3DCamera* activeCamer
 	DirectX::XMStoreFloat4x4(&_mainPassCB.viewProj, DirectX::XMMatrixTranspose(viewProj));
 	DirectX::XMStoreFloat4x4(&_mainPassCB.invViewProj, DirectX::XMMatrixTranspose(inverseViewProj));
 
-	_mainPassCB.eyePosW = activeCamera->Position();
+	_mainPassCB.eyePosW = activeCamera.Position();
 
 	auto windowDimensions = _windowManager->Dimensions();
 	_mainPassCB.renderTargetSize = DirectX::XMFLOAT2((float)windowDimensions.first, (float)windowDimensions.second);
@@ -109,24 +107,26 @@ void BrickRenderer::Draw(const GameTimer& gt)
 
 	_commandList->RSSetScissorRects(1, &_scissorRect);
 
+	//TODO - mindful of other cams
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 	_commandList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::CornflowerBlue, 0, nullptr);
-	_commandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);	
+	_commandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 	_commandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { _cbvHeap.Get() };
 	_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 	_commandList->SetGraphicsRootSignature(_instancedRootSignature.Get());
 
-	auto passCBVindex = _currentFrameResourceIndex;
-	auto passCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_cbvHeap->GetGPUDescriptorHandleForHeapStart());
-	passCBVhandle.Offset(passCBVindex, _CbvSrvUavDescriptorSize);
-
-	//TODO: Get viewport from Camera; and update per-pass buffers accordingly
-	for (int i = 0; i < 2; ++i)
+	for (const auto& camera : _cameraService->GetActiveCameras())
 	{
+		UpdateMainPassCB(gt, camera);
+
+		auto passCBVindex = _currentFrameResourceIndex;
+		auto passCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_cbvHeap->GetGPUDescriptorHandleForHeapStart());
+		passCBVhandle.Offset(passCBVindex, _CbvSrvUavDescriptorSize);
+
 		//_commandList->RSSetViewports(1, &_screenViewport);
-		_commandList->RSSetViewports(1, &_viewports[i]);
+		_commandList->RSSetViewports(1, &camera.viewport);
 		_commandList->SetGraphicsRootDescriptorTable(0, passCBVhandle);
 		DrawBricks(_commandList.Get());
 	}

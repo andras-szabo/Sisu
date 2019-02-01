@@ -2,12 +2,21 @@
 #include "CameraService.h"
 #include "IInputService.h"
 
-void CameraService::OnResize(float aspectRatio)
+void CameraService::OnResize()
 {
+	auto dimensions = _windowManager->Dimensions();
+	auto width = static_cast<float>(dimensions.first);
+	auto height = static_cast<float>(dimensions.second);
 	for (auto& camera : _cameras)
 	{
-		camera.OnResize(aspectRatio);
+		camera.OnResize(width, height);
 	}
+}
+
+void CameraService::SetCameras(const std::vector<D3DCamera> cameras)
+{
+	_cameras = cameras;
+	OnResize();
 }
 
 void CameraService::Update(const GameTimer& gt)

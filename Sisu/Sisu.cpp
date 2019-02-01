@@ -12,11 +12,25 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 
 	success &= InitGameTimer();
 	success &= InitInputService(_gameTimer.get());
-	success &= InitCameraService(_inputService.get());
 	success &= InitWindowManager(_inputService.get(), width, height, title);
+	success &= InitCameraService(_inputService.get(), _windowManager.get());
 	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get(), _cameraService.get());
 
 	success &= InitTransformUpdateSystem();
+
+	// TODO - also, proper setup
+	auto w = static_cast<float>(width);
+	auto h = static_cast<float>(height);
+
+	D3DCamera topLeft;		topLeft.SetViewport(Sisu::Vector4(0.0f, 0.0f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	//D3DCamera topRight;		topRight.SetViewport(Sisu::Vector4(0.5f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	//D3DCamera bottomRight;	bottomRight.SetViewport(Sisu::Vector4(0.5f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	//D3DCamera bottomLeft;	bottomLeft.SetViewport(Sisu::Vector4(0.0f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+
+	std::vector<D3DCamera> cameras{ topLeft };
+	_cameraService->SetCameras(cameras);
+
+	//_cameraService->SetCameras(std::vector<D3DCamera> { topLeft, topRight, bottomLeft, bottomRight });
 
 	//TODO proper setup
 	auto yetAnotherCubeIndex = GameObject::AddToArena(*_gameObjects, GameObject());
@@ -79,9 +93,9 @@ bool SisuApp::InitInputService(GameTimer* const gt)
 	return _inputService != nullptr;
 }
 
-bool SisuApp::InitCameraService(IInputService* const inputService)
+bool SisuApp::InitCameraService(IInputService* const inputService, WindowManager* const windowManager)
 {
-	_cameraService = std::make_unique<CameraService>(inputService);
+	_cameraService = std::make_unique<CameraService>(inputService, windowManager);
 	return _cameraService != nullptr;
 }
 

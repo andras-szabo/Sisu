@@ -40,10 +40,21 @@ void D3DCamera::Update(const GameTimer& gt,
 	DirectX::XMStoreFloat4x4(&_viewMatrix, view);
 }
 
-void D3DCamera::OnResize(float aspectRatio)
+void D3DCamera::OnResize(float width, float height)
 {
+	auto aspectRatio = width / height;
 	auto FOV_vertical = FOV_H / aspectRatio;
 	DirectX::XMMATRIX projectionMatrix = 
 		DirectX::XMMatrixPerspectiveFovLH(FOV_vertical * MathHelper::Pi / 180.0f, aspectRatio, nearPlaneDistance, farPlaneDistance);
 	DirectX::XMStoreFloat4x4(&_projectionMatrix, projectionMatrix);
+
+	UpdateViewport(width, height);
+}
+
+void D3DCamera::UpdateViewport(float newWidth, float newHeight)
+{
+	viewport.TopLeftX = newWidth * normalizedViewport.x;
+	viewport.TopLeftY = newHeight * normalizedViewport.y;
+	viewport.Width = newWidth * normalizedViewport.z;
+	viewport.Height = newHeight * normalizedViewport.w;
 }
