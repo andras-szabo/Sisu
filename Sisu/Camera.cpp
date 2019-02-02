@@ -54,6 +54,21 @@ void D3DCamera::UpdateTransform()
 	DirectX::XMStoreFloat4x4(&_viewMatrix, view);
 }
 
+bool D3DCamera::ShouldClearRenderTargetView(OUT D3D12_RECT& rect, OUT float* clearColor) const
+{
+	rect.left = viewport.TopLeftX;
+	rect.top = viewport.TopLeftY;
+	rect.right = rect.left + viewport.Width;
+	rect.bottom = rect.top + viewport.Height;
+
+	clearColor[0] = _clearColor[0];
+	clearColor[1] = _clearColor[1];
+	clearColor[2] = _clearColor[2];
+	clearColor[3] = _clearColor[3];
+
+	return !clearDepthOnly;
+}
+
 void D3DCamera::OnResize(float width, float height)
 {
 	auto aspectRatio = width / height;

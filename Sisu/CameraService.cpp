@@ -16,6 +16,12 @@ void CameraService::OnResize()
 void CameraService::SetCameras(const std::vector<D3DCamera> cameras)
 {
 	_cameras = cameras;
+
+	for (std::size_t i = 0; i < _cameras.size(); ++i)
+	{
+		_cameras[i].SetCameraIndex(i);
+	}
+
 	OnResize();
 }
 
@@ -32,6 +38,7 @@ void CameraService::Update(const GameTimer& gt)
 	auto e = _inputService->GetKey(KeyCode::E);
 	auto r = _inputService->GetKey(KeyCode::R);
 	auto f = _inputService->GetKey(KeyCode::F);
+	auto shift = _inputService->GetKey(KeyCode::Shift);
 
 	inputAxes.x = (a ? -1 : 0) + (d ? 1 : 0);
 	inputAxes.z = (s ? -1 : 0) + (w ? 1 : 0);
@@ -49,6 +56,14 @@ void CameraService::Update(const GameTimer& gt)
 	{
 		inputEuler.x = 0.0f;
 		inputEuler.y = 0.0f;
+	}
+
+	// Speed up if left shift is held
+
+	if (shift) 
+	{
+		inputAxes = inputAxes * 3.0f;
+		inputEuler = inputEuler * 3.0f;
 	}
 
 	_cameras[_activeCameraIndex].Update(gt, inputAxes, inputEuler);

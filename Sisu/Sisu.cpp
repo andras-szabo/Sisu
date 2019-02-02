@@ -26,14 +26,19 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	D3DCamera topRight;		topRight.SetViewport(Sisu::Vector4(0.5f, 0.0f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
 	topRight.SetPosition(Sisu::Vector3(0.0f, 12.0f, 0.0f));
 	topRight.SetRotation(Sisu::Vector3(90.0f, 0.0f, 0.0f));
+	topRight.SetClearColor(DirectX::Colors::CornflowerBlue);
 
 	D3DCamera bottomRight;	bottomRight.SetViewport(Sisu::Vector4(0.5f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	bottomRight.SetPosition(Sisu::Vector3(0.0f, 0.0f, -12.0f));
+	bottomRight.SetClearColor(DirectX::Colors::Azure);
+
 	D3DCamera bottomLeft;	bottomLeft.SetViewport(Sisu::Vector4(0.0f, 0.5f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	bottomLeft.SetPosition(Sisu::Vector3(-12.0f, 0.0f, 0.0f));
+	bottomLeft.SetRotation(Sisu::Vector3(0.0f, 90.0f, 0.0f));
+	bottomLeft.SetClearColor(DirectX::Colors::AliceBlue);
 
-	std::vector<D3DCamera> cameras{ topLeft, topRight };
+	std::vector<D3DCamera> cameras{ topLeft, topRight, bottomLeft, bottomRight };
 	_cameraService->SetCameras(cameras);
-
-	//_cameraService->SetCameras(std::vector<D3DCamera> { topLeft, topRight, bottomLeft, bottomRight });
 
 	//TODO proper setup
 	auto yetAnotherCubeIndex = GameObject::AddToArena(*_gameObjects, GameObject());

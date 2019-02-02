@@ -21,19 +21,19 @@ public:
 				const Sisu::Vector3& inputAxes,
 			    const Sisu::Vector3& inputEuler);
 
-	void SetPosition(const Sisu::Vector3& vec)
+	void SetPosition(const Sisu::Vector3& vec) { _position = vec; }
+	void SetRotation(const Sisu::Vector3& euler) { _rotation = Sisu::Quat::Euler(euler); }
+	void SetClearColor(const DirectX::XMVECTORF32& color)
 	{
-		_position = vec;
+		for (int i = 0; i < 4; ++i) { _clearColor[i] = color.f[i]; }
 	}
-
-	void SetRotation(const Sisu::Vector3& euler)
-	{
-		_rotation = Sisu::Quat::Euler(euler);
-	}
+	void SetCameraIndex(std::size_t index) { _cameraIndex = index; }
 
 	DirectX::XMFLOAT3 Position() const { return DirectX::XMFLOAT3(_position.x, _position.y, _position.z); }
 	const DirectX::XMFLOAT4X4& ViewMatrix() const { return _viewMatrix; }
 	const DirectX::XMFLOAT4X4& ProjectionMatrix() const { return _projectionMatrix; }
+	bool ShouldClearRenderTargetView(OUT D3D12_RECT& rect, OUT float* clearColor) const;
+	std::size_t CbvIndex() const { return _cameraIndex; }
 
 	void OnResize(float width, float height);
 
@@ -52,6 +52,8 @@ public:
 	Sisu::Vector4 normalizedViewport;	//left, top, width, height
 	D3D12_VIEWPORT viewport;
 
+	bool clearDepthOnly = false;
+
 private:
 	DirectX::XMFLOAT4X4 _viewMatrix;
 	DirectX::XMFLOAT4X4 _projectionMatrix;
@@ -61,5 +63,9 @@ private:
 	Sisu::Matrix4 _rotationMatrix;
 	Sisu::Quat _rotation;
 
+	float _clearColor[4] = { 0.2f, 0.3f, 1.0f, 1.0f };
+	
+	// One cbv index for each possible frame resource
+	std::size_t _cameraIndex;
 	bool _isDirty;
 };

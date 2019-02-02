@@ -18,6 +18,7 @@ public:
 								  static_cast<float>(fullscreen.second),
 								  0.0f, 1.0f);
 
+		defaultCamera.SetCameraIndex(0);
 		_cameras.push_back(defaultCamera);
 	}
 
@@ -27,6 +28,10 @@ public:
 	virtual void Update(const GameTimer& gt) override;
 	virtual void OnResize() override;
 	virtual void SetCameras(const std::vector<D3DCamera> cameras) override;
+	virtual std::size_t MaxCameraCount() const override { return MAX_CAMERA_COUNT; }
+
+public:
+	const std::size_t MAX_CAMERA_COUNT = 16;
 
 private:
 	IInputService* const _inputService;

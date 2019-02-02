@@ -11,7 +11,9 @@ enum class KeyCode : WPARAM
 	S = 0x53,
 	W = 0x57,
 
-	One = 0x31
+	One = 0x31,
+	
+	Shift = 0x10
 };
 
 class IInputService
