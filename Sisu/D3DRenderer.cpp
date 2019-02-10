@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "D3DRenderer.h"
 #include "ICameraService.h"
+#include "IGUIService.h"
 
 bool D3DRenderer::Init()
 {
@@ -26,6 +27,8 @@ bool D3DRenderer::Init()
 	Init_05_CreateCommandObjects();
 	Init_06_CreateSwapChain();
 	Init_07_CreateRtvAndDsvDescriptorHeaps();
+
+	Init_08_CreateUIHeap();
 
 	OnResize();
 
@@ -281,6 +284,81 @@ void D3DRenderer::Init_07_CreateRtvAndDsvDescriptorHeaps()
 	// if theres is only one of it?... well, it seems that 'because we do' is the answer
 }
 
+void D3DRenderer::Init_08_CreateUIHeap()
+{
+	// For now: let's just have 1 camera, 1 object
+	UINT numDescriptors = FrameResourceCount * 2;
+	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDescriptor;
+
+	cbvHeapDescriptor.NumDescriptors = numDescriptors;
+	cbvHeapDescriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	cbvHeapDescriptor.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	cbvHeapDescriptor.NodeMask = 0;
+
+	ThrowIfFailed(_d3dDevice->CreateDescriptorHeap(&cbvHeapDescriptor, IID_PPV_ARGS(&_uiHeap)));
+}
+
+void D3DRenderer::Init_09_BuildUIConstantBufferViews()
+{
+	auto passCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
+
+	// first 3 views on the heap: pertaining to the UI camera,
+	// for each of the 3 fram resources
+
+	for (int frameIndex = 0; frameIndex < FrameResourceCount; ++frameIndex)
+	{
+		auto uiConstantBuffer = _frameResources[frameIndex]->UIPassConstantBuffer->Resource();
+		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = uiConstantBuffer->GetGPUVirtualAddress();
+		auto heapIndex = frameIndex;
+		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_uiHeap->GetCPUDescriptorHandleForHeapStart());
+		handle.Offset(heapIndex, _CbvSrvUavDescriptorSize);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+		cbvDesc.BufferLocation = cbAddress;
+		cbvDesc.SizeInBytes = passCBByteSize;
+
+		_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
+	}
+}
+
+void D3DRenderer::Init_10_BuildUIRootSignature()
+{
+	// OK, what is a root signature?
+	// if shaders are a function, input resources the shaders expect params to that function,
+	// then the root signature is that function's signature.
+	// The root sig defines what resources the app will bind to the rendering pipeline,
+	// before a draw call can be executed, and where those resources get mapped to
+	// shader input registers.
+	// The root sig is defined by an array of root parameters, that describe the
+	// resources shaders will expect for a draw call.
+	// For now let's just have a root sig with a single parameter, which is
+	// a descriptor table large enough to store one constant buffer view.
+	CD3DX12_ROOT_PARAMETER slotRootParams[1];
+	CD3DX12_DESCRIPTOR_RANGE cbvTable;
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+	slotRootParams[0].InitAsDescriptorTable(1, &cbvTable);
+	
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParams, 0, nullptr, 
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	ComPtr<ID3DBlob> serializedRootSignature = nullptr;
+	ComPtr<ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+		serializedRootSignature.GetAddressOf(), errorBlob.GetAddressOf());
+
+	if (errorBlob != nullptr)
+	{
+		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	}
+
+	ThrowIfFailed(hr);
+	ThrowIfFailed(_d3dDevice->CreateRootSignature(0,
+		serializedRootSignature->GetBufferPointer(),
+		serializedRootSignature->GetBufferSize(),
+		IID_PPV_ARGS(_uiRootSignature.GetAddressOf()))
+	);
+}
+
 void D3DRenderer::CreateDepthBuffer()
 {
 	auto dimensions = _windowManager->Dimensions();
@@ -357,6 +435,26 @@ void D3DRenderer::SetupViewport()
 	_viewports[1].TopLeftX = static_cast<float>(width / 2.0f);
 
 	_scissorRect = { 0, 0, width, height };
+}
+
+void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
+{
+	ID3D12DescriptorHeap* descriptorHeaps[] = { _uiHeap.Get() };
+	_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	// OH noes, we need a new root signature for the ui. :/
+	_commandList->SetGraphicsRootSignature(_uiRootSignature.Get());
+
+	auto guiCamera = _gui->GetCamera();
+	auto cameraCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
+	cameraCBVhandle.Offset(guiCamera.CbvIndex(), _CbvSrvUavDescriptorSize);
+
+	_commandList->RSSetViewports(1, &guiCamera.viewport);
+	_commandList->SetGraphicsRootDescriptorTable(0, cameraCBVhandle);
+
+	// get object const buffer
+	// get "quad" submesh geometry
+	// ... draw
 }
 
 void D3DRenderer::WaitForNextFrameResource()

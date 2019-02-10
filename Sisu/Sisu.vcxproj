@@ -163,7 +163,9 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GeometryGenerator.h" />
+    <ClInclude Include="GUIService.h" />
     <ClInclude Include="ICameraService.h" />
+    <ClInclude Include="IGUIService.h" />
     <ClInclude Include="IInputService.h" />
     <ClInclude Include="InputService.h" />
     <ClInclude Include="IRenderer.h" />
@@ -187,6 +189,7 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
+    <ClCompile Include="GUIService.cpp" />
     <ClCompile Include="InputService.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathHelper.cpp" />

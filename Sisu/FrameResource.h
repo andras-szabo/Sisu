@@ -52,6 +52,11 @@ struct FrameResource
 
 		// ddevice*, count, isConstantBuffer
 		passConstantBuffer = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
+		UIPassConstantBuffer = std::make_unique<UploadBuffer<PassConstants>>(device, 1, true);
+
+		// For now, let's just create 1 UI object
+		UIObjectConstantBuffer = std::make_unique<UploadBuffer<FRObjectConstants>>(device, 1, true);
+
 
 		if (cbObjectCount > 0)
 		{
@@ -83,9 +88,13 @@ public:
 	// the commands. => Each frame needs their own allocator, and also their
 	// own constant buffers.
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+
 	std::unique_ptr<UploadBuffer<PassConstants>> passConstantBuffer = nullptr;
 	std::unique_ptr<UploadBuffer<FRObjectConstants>> objectConstantBuffer = nullptr;
 	std::unique_ptr<UploadBuffer<FRObjectConstants>> instanceBuffer = nullptr;
+
+	std::unique_ptr<UploadBuffer<PassConstants>> UIPassConstantBuffer = nullptr;
+	std::unique_ptr<UploadBuffer<FRObjectConstants>> UIObjectConstantBuffer = nullptr;
 
 	UINT64 fence = 0;
 

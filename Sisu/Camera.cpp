@@ -72,10 +72,22 @@ bool D3DCamera::ShouldClearRenderTargetView(OUT D3D12_RECT& rect, OUT float* cle
 void D3DCamera::OnResize(float width, float height)
 {
 	auto aspectRatio = width / height;
-	auto FOV_vertical = FOV_H / aspectRatio;
-	DirectX::XMMATRIX projectionMatrix = 
-		DirectX::XMMatrixPerspectiveFovLH(FOV_vertical * MathHelper::Pi / 180.0f, aspectRatio, nearPlaneDistance, farPlaneDistance);
-	DirectX::XMStoreFloat4x4(&_projectionMatrix, projectionMatrix);
+	if (isPerspective)
+	{
+		auto FOV_vertical = FOV_H / aspectRatio;
+
+		DirectX::XMMATRIX projectionMatrix =
+			DirectX::XMMatrixPerspectiveFovLH(FOV_vertical * MathHelper::Pi / 180.0f, aspectRatio, nearPlaneDistance, farPlaneDistance);
+		DirectX::XMStoreFloat4x4(&_projectionMatrix, projectionMatrix);
+	}
+	else
+	{
+		auto camSpaceWidth = orthoSizeWidth;
+		auto camSpaceHeight = camSpaceWidth / aspectRatio;
+		DirectX::XMMATRIX projectionMatrix =
+			DirectX::XMMatrixOrthographicLH(camSpaceWidth, camSpaceHeight, nearPlaneDistance, farPlaneDistance);
+		DirectX::XMStoreFloat4x4(&_projectionMatrix, projectionMatrix);
+	}
 
 	UpdateViewport(width, height);
 	UpdateTransform();

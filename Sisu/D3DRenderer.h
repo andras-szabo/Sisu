@@ -20,6 +20,7 @@
 #include "FrameResource.h"
 
 class ICameraService;
+class IGUIService;
 
 class D3DRenderer : public IRenderer
 {
@@ -29,10 +30,12 @@ public:
 
 	D3DRenderer(WindowManager* const windowManager, 
 				GameTimer* const gameTimer, 
-				ICameraService* const cameraService):
+				ICameraService* const cameraService,
+				IGUIService* const guiService):
 		_windowManager(windowManager),
 		_gameTimer(gameTimer),
-		_cameraService(cameraService)
+		_cameraService(cameraService),
+		_gui(guiService)
 	{
 	}
 
@@ -56,13 +59,18 @@ protected:
 	void Init_06_CreateSwapChain();
 	void Init_07_CreateRtvAndDsvDescriptorHeaps();
 
+	void Init_08_CreateUIHeap();
+	void Init_09_BuildUIConstantBufferViews();
+	void Init_10_BuildUIRootSignature();
+
 	void CreateDepthBuffer();
 	void SetupViewport();
 
 	void ResetCommandList();
 	void CloseAndExecuteCommandList();
 	void FlushCommandQueue();
-
+	
+	void DrawUI(ID3D12GraphicsCommandList* cmdList);
 	void WaitForNextFrameResource();
 
 protected:
@@ -92,6 +100,10 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _rtvHeap;	// render target descriptor heap
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _dsvHeap;	// depth and stencil buffer desc heap
 
+	// We should wrap this desc heap into something that's easier to expand
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _uiHeap;	// ui-specific heap
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> _uiRootSignature = nullptr;
+
 	UINT _RtvDescriptorSize = 0;			// render target descriptor size
 	UINT _DsvDescriptorSize = 0;			// depth and stencil buffer descriptor size
 	UINT _CbvSrvUavDescriptorSize = 0;		// constant buffer, shader resource, unordered acces descriptor sizes
@@ -111,4 +123,5 @@ protected:
 	WindowManager* const _windowManager;
 	GameTimer* const _gameTimer;
 	ICameraService* const _cameraService;
+	IGUIService* const _gui;
 };

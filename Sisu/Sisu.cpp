@@ -3,6 +3,7 @@
 #include "BrickRenderer.h"
 #include "InputService.h"
 #include "CameraService.h"
+#include "GUIService.h"
 
 bool SisuApp::Init(int width, int height, const std::wstring& title)
 {
@@ -14,7 +15,10 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	success &= InitInputService(_gameTimer.get());
 	success &= InitWindowManager(_inputService.get(), width, height, title);
 	success &= InitCameraService(_inputService.get(), _windowManager.get());
-	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get(), _cameraService.get());
+	success &= InitGUIService(_inputService.get(), _windowManager.get());
+	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), 
+							_gameObjects.get(), _cameraService.get(),
+							_gui.get());
 
 	success &= InitTransformUpdateSystem();
 
@@ -23,6 +27,8 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	auto h = static_cast<float>(height);
 
 	D3DCamera topLeft;		topLeft.SetViewport(Sisu::Vector4(0.0f, 0.0f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
+	topLeft.isPerspective = true;
+
 	D3DCamera topRight;		topRight.SetViewport(Sisu::Vector4(0.5f, 0.0f, 0.5f, 0.5f), w, h, 0.0f, 1.0f);
 	topRight.SetPosition(Sisu::Vector3(0.0f, 12.0f, 0.0f));
 	topRight.SetRotation(Sisu::Vector3(90.0f, 0.0f, 0.0f));
@@ -107,6 +113,12 @@ bool SisuApp::InitCameraService(IInputService* const inputService, WindowManager
 	return _cameraService != nullptr;
 }
 
+bool SisuApp::InitGUIService(IInputService * const inputService, WindowManager * const windowManager)
+{
+	_gui = std::make_unique<GUIService>(inputService, windowManager);
+	return _gui != nullptr;
+}
+
 bool SisuApp::InitWindowManager(IInputService* const inputService, int width, int height, const std::wstring& title)
 {
 	_windowManager = std::make_unique<WindowManager>(*this, inputService, width, height, title);
@@ -114,9 +126,9 @@ bool SisuApp::InitWindowManager(IInputService* const inputService, int width, in
 }
 
 bool SisuApp::InitRenderer(WindowManager* const windowManager, GameTimer* const gt, 
-						   Arena<GameObject>* const arena, ICameraService* const camService)
+						   Arena<GameObject>* const arena, ICameraService* const camService, IGUIService* const guiService)
 {
-	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena, camService);
+	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena, camService, guiService);
 	return _renderer->Init();
 }
 

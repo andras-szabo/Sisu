@@ -17,7 +17,10 @@ bool BrickRenderer::Init()
 	BuildShadersAndInputLayout();
 	BuildShapeGeometry();
 
+	//TODO: move this into D3DRenderer
 	BuildFrameResources();
+	D3DRenderer::Init_09_BuildUIConstantBufferViews();
+	D3DRenderer::Init_10_BuildUIRootSignature();
 
 	BuildDescriptorHeaps();
 	BuildConstantBufferViews();
@@ -35,7 +38,6 @@ void BrickRenderer::Update(const GameTimer& gt)
 	_cameraService->Update(gt);
 	WaitForNextFrameResource();
 	UpdateInstanceData();
-
 }
 
 void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, const D3DCamera& activeCamera)
@@ -97,9 +99,6 @@ void BrickRenderer::UpdateInstanceData()
 
 void BrickRenderer::ClearRTVDSVforCamera(ID3D12GraphicsCommandList* cmdList, const D3DCamera& camera) const
 {
-	//D3D12_RECT topLeft; topLeft.left = 0; topLeft.top = 0; topLeft.bottom = 300; topLeft.right = 400;
-	//D3D12_RECT topRight; topRight.left = 400; topRight.top = 0; topRight.bottom = 300; topRight.right = 800;
-
 	D3D12_RECT rtvRect;
 	float rtvClearColor[4];
 	
@@ -147,6 +146,9 @@ void BrickRenderer::Draw(const GameTimer& gt)
 
 		DrawBricks(_commandList.Get());
 	}
+
+	// And now, on top of everything, draw the UI
+	DrawUI(_commandList.Get());
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	ThrowIfFailed(_commandList->Close());

@@ -177,23 +177,24 @@ public:
 
 public:
 	//TODO: organize this nicely for alignment + only what's really needed
-	std::size_t childrenStartIndex = 0;
-	std::size_t childrenEndIndex = 0;
-	std::size_t parentIndex = 0;
-
-	bool isRoot = true;
-	bool hasChildren = false;
-	bool isVisible = true;
+	Sisu::Matrix4 transform;
+	Sisu::Quat rotQuat = Sisu::Quat::Identity();
 
 	Sisu::Vector3 localPosition;
 	Sisu::Vector3 localRotation;
 	Sisu::Vector3 localScale;
 
-	Sisu::Vector3 velocityPerSec;
-	Sisu::Vector3 eulerRotPerSec;
+	std::size_t childrenStartIndex = 0;
+	std::size_t childrenEndIndex = 0;
+	std::size_t parentIndex = 0;
 
 	Sisu::Color color;
-	Sisu::Matrix4 transform;
-	Sisu::Quat rotQuat = Sisu::Quat::Identity();
 	Sisu::Color borderColor;
+
+	bool isRoot = true;
+	bool hasChildren = false;
+	bool isVisible = true;
+
+	Sisu::Vector3 velocityPerSec;
+	Sisu::Vector3 eulerRotPerSec;
 };

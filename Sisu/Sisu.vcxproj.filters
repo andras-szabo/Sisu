@@ -90,6 +90,12 @@
     <ClInclude Include="CameraService.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IGUIService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -141,6 +147,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CameraService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GUIService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
