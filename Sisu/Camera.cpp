@@ -91,7 +91,7 @@ void D3DCamera::OnResize(float width, float height)
 
 	if (isScreenSpaceUI)
 	{
-		_projectionMatrix = MathHelper::Identity4x4();
+		_projectionMatrix = MathHelper::ScreenSpaceUIProj(); // Identity4x4();
 	}
 
 	UpdateViewport(width, height);

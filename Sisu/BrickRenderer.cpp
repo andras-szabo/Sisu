@@ -249,7 +249,7 @@ void BrickRenderer::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
 	auto box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 0);
-	auto quad = geoGen.CreateQuad(0.0f, 0.0f, 0.5f, 0.5f, 0.5f);
+	auto quad = geoGen.CreateQuad(0.25f, 0.25f, 0.5f, 0.5f, 0.5f);
 
 	UINT boxVertexOffset = 0;
 	UINT boxIndexOffset = 0;
