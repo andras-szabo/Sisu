@@ -5,6 +5,8 @@
 class D3DCamera
 {
 public:
+	static DirectX::XMFLOAT4X4 ScreenSpaceUIProjectionMatrix();
+
 	D3DCamera() : _position(Sisu::Vector3(0.0f, 0.0f, -15.0f)), _isDirty(true)
 	{
 	}

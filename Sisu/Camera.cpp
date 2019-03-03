@@ -1,6 +1,22 @@
 #include "stdafx.h"
 #include "Camera.h"
 
+// Creates a projection matrix such that
+// you can define UI in the (0,1) interval
+// coordinates, where (0,0) is the top left
+// of the screen, and (1,1) is bottom right.
+DirectX::XMFLOAT4X4 D3DCamera::ScreenSpaceUIProjectionMatrix()
+{
+	static DirectX::XMFLOAT4X4 P{
+		2.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, -2.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f, 1.0f
+	};
+
+	return P;
+}
+
 DirectX::XMMATRIX D3DCamera::ToXMMatrix(const Sisu::Matrix4& m) const
 {
 	//TODO - we could probably optimize this.
@@ -91,7 +107,7 @@ void D3DCamera::OnResize(float width, float height)
 
 	if (isScreenSpaceUI)
 	{
-		_projectionMatrix = MathHelper::ScreenSpaceUIProj(); // Identity4x4();
+		_projectionMatrix = ScreenSpaceUIProjectionMatrix();
 	}
 
 	UpdateViewport(width, height);
