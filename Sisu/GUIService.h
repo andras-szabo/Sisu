@@ -9,6 +9,7 @@ public:
 		_inputService(inputService), _windowManager(windowManager)
 	{
 		_camera.isPerspective = false;
+		_camera.isScreenSpaceUI = true;
 
 		auto fullscreen = _windowManager->Dimensions();
 		_camera.SetViewport(Sisu::Vector4(0.0f, 0.0f, 1.0f, 1.0f),
@@ -29,5 +30,5 @@ public:
 private:
 	IInputService* const _inputService;
 	WindowManager* const _windowManager;
-	D3DCamera _camera;
+	D3DCamera _camera = D3DCamera(0.0f, 0.0f, 0.0f);
 };

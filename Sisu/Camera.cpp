@@ -89,6 +89,11 @@ void D3DCamera::OnResize(float width, float height)
 		DirectX::XMStoreFloat4x4(&_projectionMatrix, projectionMatrix);
 	}
 
+	if (isScreenSpaceUI)
+	{
+		_projectionMatrix = MathHelper::Identity4x4();
+	}
+
 	UpdateViewport(width, height);
 	UpdateTransform();
 }

@@ -9,6 +9,11 @@ public:
 	{
 	}
 
+	D3DCamera(float px, float py, float pz) :
+		_position(Sisu::Vector3(px, py, pz)), _isDirty(true)
+	{
+	}
+
 	void SetViewport(Sisu::Vector4 normalizedVP, float width, float height, float mindepth, float maxdepth)
 	{
 		normalizedViewport = normalizedVP;
@@ -46,7 +51,7 @@ public:
 	float speedUnitPerSecond = 2.0f;
 	float rotationSensitivity = 50.0f;
 	float FOV_H = 100.0f;
-	float orthoSizeWidth = 10.0f;
+	float orthoSizeWidth = 1.0f;
 	float nearPlaneDistance = 0.3f;
 	float farPlaneDistance = 1000.0f;
 
@@ -55,6 +60,7 @@ public:
 
 	bool clearDepthOnly = false;
 	bool isPerspective = true;
+	bool isScreenSpaceUI = false;
 
 private:
 	DirectX::XMFLOAT4X4 _viewMatrix;
