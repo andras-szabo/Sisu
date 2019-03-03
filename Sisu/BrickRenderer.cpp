@@ -21,6 +21,9 @@ bool BrickRenderer::Init()
 	BuildFrameResources();
 	D3DRenderer::Init_09_BuildUIConstantBufferViews();
 	D3DRenderer::Init_10_BuildUIRootSignature();
+	D3DRenderer::Init_11_BuildUIRenderItems(_geometries["shapeGeo"].get());
+	D3DRenderer::Init_12_BuildUIInputLayout();
+	D3DRenderer::Init_13_BuildUIPSO();
 
 	BuildDescriptorHeaps();
 	BuildConstantBufferViews();
@@ -36,8 +39,10 @@ bool BrickRenderer::Init()
 void BrickRenderer::Update(const GameTimer& gt)
 {
 	_cameraService->Update(gt);
+	_gui->Update(gt);
 	WaitForNextFrameResource();
 	UpdateInstanceData();
+	UpdateUIInstanceData();
 }
 
 void BrickRenderer::UpdateMainPassCB(const GameTimer& gt, const D3DCamera& activeCamera)
@@ -148,6 +153,11 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	}
 
 	// And now, on top of everything, draw the UI
+	// But for this we need to update things
+	// Something like UpdateMainPassCB
+	auto uiCam = _gui->GetCamera();
+	UpdateUIPassBuffer(gt, uiCam);
+	ClearRTVDSVforCamera(_commandList.Get(), uiCam);
 	DrawUI(_commandList.Get());
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -239,14 +249,23 @@ void BrickRenderer::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
 	auto box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 0);
+	auto quad = geoGen.CreateQuad(0.0f, 0.0f, 0.5f, 0.5f, 0.5f);
 
 	UINT boxVertexOffset = 0;
 	UINT boxIndexOffset = 0;
+
+	UINT quadVertexOffset = box.Vertices.size();
+	UINT quadIndexOffset = box.Indices32.size();
 
 	SubmeshGeometry boxSubmesh;
 	boxSubmesh.indexCount = (UINT)box.Indices32.size();
 	boxSubmesh.startIndexLocation = boxIndexOffset;
 	boxSubmesh.baseVertexLocation = boxVertexOffset;
+
+	SubmeshGeometry quadSubmesh;
+	quadSubmesh.indexCount = (UINT)quad.Indices32.size();
+	quadSubmesh.startIndexLocation = quadIndexOffset;
+	quadSubmesh.baseVertexLocation = quadVertexOffset;
 
 	// Extract the vertex elements we are interested in, and pack
 	// the vertices of all the meshes into one vertex buffer.
@@ -254,14 +273,16 @@ void BrickRenderer::BuildShapeGeometry()
 	//	Ah, as in: just give me pos and color, for now we're not
 	//  interested about normals and whatnot.
 
-	auto totalVertexCount = box.Vertices.size();
+	auto totalVertexCount = box.Vertices.size() + quad.Vertices.size();
 	std::vector<BrickVertex> vertices(totalVertexCount);
 
 	UINT vbIndex = 0;
 	vbIndex = AddToVertexBuffer(box, vertices, vbIndex, DirectX::XMFLOAT4(DirectX::Colors::White));
+	vbIndex = AddToVertexBuffer(quad, vertices, vbIndex, DirectX::XMFLOAT4(DirectX::Colors::White));
 
 	std::vector<std::uint16_t> indices;
 	indices.insert(indices.end(), std::begin(box.GetIndices16()), std::end(box.GetIndices16()));
+	indices.insert(indices.end(), std::begin(quad.GetIndices16()), std::end(quad.GetIndices16()));
 
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(BrickVertex);
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -287,6 +308,7 @@ void BrickRenderer::BuildShapeGeometry()
 	geo->indexBufferByteSize = ibByteSize;
 
 	geo->drawArgs["brick"] = boxSubmesh;
+	geo->drawArgs["quad"] = quadSubmesh;
 
 	_geometries[geo->name] = std::move(geo);
 }

@@ -19,8 +19,32 @@
 #include "GameTimer.h"
 #include "FrameResource.h"
 
+class D3DCamera;
+class GameTimer;
 class ICameraService;
 class IGUIService;
+
+struct UIRenderItem
+{
+	UIRenderItem() = default;
+	DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+
+	//TODO = NumFramesDirty should equal to renderer's FrameResourceCount,
+	//		 but FFS dependencies
+	int NumFramesDiry = 3;
+	MeshGeometry* Geo = nullptr;
+	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	UINT IndexCount = 0;
+	UINT StartIndexLocation = 0;
+	int BaseVertexLocation = 0;
+
+	void SetCBVIndex(UINT index) { _objectCBIndex = index; }
+	UINT GetCBVIndex() const { return _objectCBIndex; }
+
+private:
+	UINT _objectCBIndex;
+};
 
 class D3DRenderer : public IRenderer
 {
@@ -62,6 +86,9 @@ protected:
 	void Init_08_CreateUIHeap();
 	void Init_09_BuildUIConstantBufferViews();
 	void Init_10_BuildUIRootSignature();
+	void Init_11_BuildUIRenderItems(MeshGeometry* geometries);
+	void Init_12_BuildUIInputLayout();
+	void Init_13_BuildUIPSO();
 
 	void CreateDepthBuffer();
 	void SetupViewport();
@@ -70,6 +97,8 @@ protected:
 	void CloseAndExecuteCommandList();
 	void FlushCommandQueue();
 	
+	void UpdateUIPassBuffer(const GameTimer& gt, const D3DCamera& uiCamera);
+	void UpdateUIInstanceData();
 	void DrawUI(ID3D12GraphicsCommandList* cmdList);
 	void WaitForNextFrameResource();
 
@@ -103,6 +132,12 @@ protected:
 	// We should wrap this desc heap into something that's easier to expand
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _uiHeap;	// ui-specific heap
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> _uiRootSignature = nullptr;
+	std::unordered_map<std::string, ComPtr<ID3DBlob>> _uiShaders;
+	std::vector<D3D12_INPUT_ELEMENT_DESC> _uiInputLayout;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState>_uiPSO;
+
+	std::vector<UIRenderItem> _uiRenderItems;
+	PassConstants _uiPassConstants;
 
 	UINT _RtvDescriptorSize = 0;			// render target descriptor size
 	UINT _DsvDescriptorSize = 0;			// depth and stencil buffer descriptor size

@@ -176,6 +176,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TransformUpdateSystem.h" />
+    <ClInclude Include="UIRenderItem.h" />
     <ClInclude Include="UploadBuffer.h" />
     <ClInclude Include="WindowManager.h" />
   </ItemGroup>

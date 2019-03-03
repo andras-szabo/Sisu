@@ -5,6 +5,7 @@
 #include "Arena.h"
 #include "GameObject.h"
 #include "ICameraService.h"
+#include "IGUIService.h"
 
 class GameTimer;
 class GameObject;
