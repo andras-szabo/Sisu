@@ -51,6 +51,7 @@ class D3DRenderer : public IRenderer
 public:
 	static const int SwapChainBufferCount = 2;
 	static const int FrameResourceCount = 3;
+	static const int MaxTextureCount = 128;
 
 	D3DRenderer(WindowManager* const windowManager, 
 				GameTimer* const gameTimer, 
@@ -70,6 +71,12 @@ public:
 
 	virtual bool Init() override;
 	virtual bool IsSetup() const override { return _d3dDevice != nullptr; }
+
+	ID3D12Device* GetDevice() { return _d3dDevice == nullptr ? nullptr : _d3dDevice.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList()
+	{
+		return _commandList == nullptr ? nullptr : _commandList.Get();
+	}
 
 protected:
 	virtual void OnResize() override;
@@ -128,6 +135,7 @@ protected:
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _rtvHeap;	// render target descriptor heap
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _dsvHeap;	// depth and stencil buffer desc heap
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _srvHeap;	// shader resource view heap 
 
 	// We should wrap this desc heap into something that's easier to expand
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _uiHeap;	// ui-specific heap

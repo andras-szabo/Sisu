@@ -281,6 +281,16 @@ void D3DRenderer::Init_07_CreateRtvAndDsvDescriptorHeaps()
 		_d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(_dsvHeap.GetAddressOf()))
 	);
 
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc;
+	srvHeapDesc.NumDescriptors = MaxTextureCount;
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	srvHeapDesc.NodeMask = 0;
+
+	ThrowIfFailed(
+		_d3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvHeap))
+	);
+
 	// Q though: why do we have to have the dsv descriptor on a heap,
 	// if theres is only one of it?... well, it seems that 'because we do' is the answer
 }
