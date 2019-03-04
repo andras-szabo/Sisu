@@ -14,6 +14,8 @@ bool D3DRenderer::Init()
 	}
 #endif
 
+	_textureManager = std::make_unique<TextureManager>(this);
+
 	Init_00_CreateDXGIFactory();
 	Init_01_CreateDevice();
 	Init_02_CreateFence();
@@ -282,16 +284,6 @@ void D3DRenderer::Init_07_CreateRtvAndDsvDescriptorHeaps()
 		_d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(_dsvHeap.GetAddressOf()))
 	);
 
-	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc;
-	srvHeapDesc.NumDescriptors = MaxTextureCount;
-	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	srvHeapDesc.NodeMask = 0;
-
-	ThrowIfFailed(
-		_d3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvHeap))
-	);
-
 	// Q though: why do we have to have the dsv descriptor on a heap,
 	// if theres is only one of it?... well, it seems that 'because we do' is the answer
 }
@@ -299,7 +291,7 @@ void D3DRenderer::Init_07_CreateRtvAndDsvDescriptorHeaps()
 void D3DRenderer::Init_08_CreateUIHeap()
 {
 	// For now: let's just have 1 camera, 1 object
-	UINT numDescriptors = FrameResourceCount * 2;
+	UINT numDescriptors = MaxTextureCount + FrameResourceCount * 2;
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDescriptor;
 
 	cbvHeapDescriptor.NumDescriptors = numDescriptors;
@@ -314,15 +306,21 @@ void D3DRenderer::Init_09_BuildUIConstantBufferViews()
 {
 	auto passCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 
+	// OK so _uiHeap should consist of:
+	// - first 128 (or however many) views: for textures
+	// then
 	// first 3 views on the heap: pertaining to the UI camera,
 	// for each of the 3 frame resources
 	// and create one extra, per FR, for our mock ui quad
 
+	auto textureViewIndexOffset = MaxTextureCount;
+
+	// So first set per-pass views
 	for (int frameIndex = 0; frameIndex < FrameResourceCount; ++frameIndex)
 	{
 		auto uiConstantBuffer = _frameResources[frameIndex]->UIPassConstantBuffer->Resource();
 		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = uiConstantBuffer->GetGPUVirtualAddress();
-		auto heapIndex = frameIndex;
+		auto heapIndex = textureViewIndexOffset + frameIndex;
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_uiHeap->GetCPUDescriptorHandleForHeapStart());
 		handle.Offset(heapIndex, _CbvSrvUavDescriptorSize);
 
@@ -347,7 +345,7 @@ void D3DRenderer::Init_09_BuildUIConstantBufferViews()
 
 		for (int i = 0; i < UI_OBJECT_COUNT; ++i)
 		{
-			auto heapIndex = passCBVoffset + (UI_OBJECT_COUNT * frameIndex) + i;
+			auto heapIndex = MaxTextureCount + passCBVoffset + (UI_OBJECT_COUNT * frameIndex) + i;
 			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_uiHeap->GetCPUDescriptorHandleForHeapStart());
 			handle.Offset(heapIndex, _CbvSrvUavDescriptorSize);
 
@@ -363,7 +361,7 @@ void D3DRenderer::Init_09_BuildUIConstantBufferViews()
 std::array<const CD3DX12_STATIC_SAMPLER_DESC, 1> D3DRenderer::GetStaticSamplers() const
 {
 	const CD3DX12_STATIC_SAMPLER_DESC pointWrap(
-		0, // shader register
+		0, // shader sampler register
 		D3D12_FILTER_MIN_MAG_MIP_POINT,		// filter
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,	// address mode for U
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,	// address mode for V
@@ -386,9 +384,11 @@ void D3DRenderer::Init_10_BuildUIRootSignature()
 	cbvTablePerObject.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);		// per object to register 1
 	slotRootParams[1].InitAsDescriptorTable(1, &cbvTablePerObject);
 
-	CD3DX12_DESCRIPTOR_RANGE srvTable;
+	CD3DX12_DESCRIPTOR_RANGE srvTable;									// srv for teh texture to tex register 0
 	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	srvTable.BaseShaderRegister = 0;
 	slotRootParams[2].InitAsDescriptorTable(1, &srvTable);
+	slotRootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	auto staticSamplers = GetStaticSamplers();
 
@@ -458,15 +458,15 @@ void D3DRenderer::Init_12_BuildUIInputLayout()
 			"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		},
 		{
-			"NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-		},
-		{
-			"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0,
-		},
-		{
-			"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+			"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		}
 	};
+}
+
+void D3DRenderer::Init_14_BuildUITextures()
+{
+	_textureManager->LoadFromFile("testTexture", L"Resources/Textures/testTexture.dds");
+	_textureManager->UploadToHeap("testTexture");
 }
 
 void D3DRenderer::Init_13_BuildUIPSO()
@@ -487,10 +487,23 @@ void D3DRenderer::Init_13_BuildUIPSO()
 		reinterpret_cast<BYTE*>(_uiShaders["PS"]->GetBufferPointer()),
 		_uiShaders["PS"]->GetBufferSize()
 	};
+	
+	D3D12_RENDER_TARGET_BLEND_DESC bd;
+	bd.BlendEnable = true;
+	bd.LogicOpEnable = false;
+	bd.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	bd.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	bd.BlendOp = D3D12_BLEND_OP_ADD;
+	bd.SrcBlendAlpha = D3D12_BLEND_ONE;
+	bd.DestBlendAlpha = D3D12_BLEND_ZERO;
+	bd.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	bd.LogicOp = D3D12_LOGIC_OP_NOOP;
+	bd.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	uiPSOdesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	uiPSOdesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 	uiPSOdesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	uiPSOdesc.BlendState.RenderTarget[0] = bd;
 	uiPSOdesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	uiPSOdesc.SampleMask = UINT_MAX;
 	uiPSOdesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -627,18 +640,19 @@ void D3DRenderer::UpdateUIInstanceData()
 	}
 }
 
+//TODO: cmdList instead of _commandList
 void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 {
 	cmdList->SetPipelineState(_uiPSO.Get());
+	_commandList->SetGraphicsRootSignature(_uiRootSignature.Get());
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { _uiHeap.Get() };
 	_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	_commandList->SetGraphicsRootSignature(_uiRootSignature.Get());
-
 	auto guiCamera = _gui->GetCamera();
 	auto cameraCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
-	cameraCBVhandle.Offset(guiCamera.CbvIndex(), _CbvSrvUavDescriptorSize);
+	//cameraCBVhandle.Offset(guiCamera.CbvIndex(), _CbvSrvUavDescriptorSize);
+	cameraCBVhandle.Offset(MaxTextureCount, _CbvSrvUavDescriptorSize);
 
 	_commandList->RSSetViewports(1, &guiCamera.viewport);
 	_commandList->SetGraphicsRootDescriptorTable(0, cameraCBVhandle);	// 0-> per pass => camera.
@@ -646,7 +660,6 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 	// ... this is where we'd call "DrawAllUIRenderItems". But for now:
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(FRObjectConstants));
 	auto objectCB = _currentFrameResource->UIObjectConstantBuffer->Resource();
-
 	auto mockUI = _uiRenderItems[0];
 
 	_commandList->IASetVertexBuffers(0, 1, &mockUI.Geo->GetVertexBufferView());
@@ -657,11 +670,34 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 	auto perPassOffset = FrameResourceCount;
 	auto perFrameOffset = _uiRenderItems.size() * _currentFrameResourceIndex;
 
-	auto cbvIndex = perPassOffset + perFrameOffset + objectCBVindex;
+	auto cbvIndex = MaxTextureCount + perPassOffset + perFrameOffset + objectCBVindex;
 	auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
 	cbvHandle.Offset(cbvIndex, _CbvSrvUavDescriptorSize);
 
+	// So the problem, probably, is that there are two kinds of 
+	// descriptor heaps: CBV_SRV_UAV, and SAMPLER; and only one of each
+	// kind can be set at any given call. So I think what goes wrong is
+	// that I can't really set one descriptor table from one heap, for
+	// one of the root params, and then another table from another heap,
+	// for the other one. can i? I don't think so. Look: when I
+	// set the UI thing first, it ends up empty, but the thing is drawn,
+	// b/c the const buffer is set up OK. If I set the UI thing last,
+	// then the thing is not drawn - because the _srvHeap has no clue
+	// about where cbvHandle is pointing. I think.
+	// So maybe the next thing would be to use the _uiHeap for the
+	// ui textures too.
+
 	_commandList->SetGraphicsRootDescriptorTable(1, cbvHandle);			// 1-> per object stuff
+
+	//Region setting ui texture
+	//ID3D12DescriptorHeap* descHeaps[] = { _srvHeap.Get() };
+	//_commandList->SetDescriptorHeaps(_countof(descHeaps), descHeaps);
+	CD3DX12_GPU_DESCRIPTOR_HANDLE tex(_uiHeap->GetGPUDescriptorHandleForHeapStart());
+	//tex.Offset(renderItem->giveMeTextureIndex, _CbvSrvUavDescriptorSize);
+
+	_commandList->SetGraphicsRootDescriptorTable(2, tex);				// 2-> texture
+	//endregion
+	
 	_commandList->DrawIndexedInstanced(mockUI.IndexCount, 1, mockUI.StartIndexLocation,
 									   mockUI.BaseVertexLocation, 0);
 }

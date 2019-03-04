@@ -24,6 +24,7 @@ bool BrickRenderer::Init()
 	D3DRenderer::Init_11_BuildUIRenderItems(_geometries["shapeGeo"].get());
 	D3DRenderer::Init_12_BuildUIInputLayout();
 	D3DRenderer::Init_13_BuildUIPSO();
+	D3DRenderer::Init_14_BuildUITextures();
 
 	BuildDescriptorHeaps();
 	BuildConstantBufferViews();
@@ -249,7 +250,7 @@ void BrickRenderer::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
 	auto box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 0);
-	auto quad = geoGen.CreateQuad(0.25f, 0.25f, 0.5f, 0.5f, 0.5f);
+	auto quad = geoGen.CreateQuad(0.0f, 0.0f, 0.5f, 1.0f, 0.5f);
 
 	UINT boxVertexOffset = 0;
 	UINT boxIndexOffset = 0;
@@ -319,6 +320,7 @@ UINT BrickRenderer::AddToVertexBuffer(const GeometryGenerator::MeshData& mesh,
 	for (std::size_t i = 0; i < mesh.Vertices.size(); ++i, ++startIndex)
 	{
 		vertices[startIndex].Pos = mesh.Vertices[i].Position;
+		vertices[startIndex].Tex = mesh.Vertices[i].TexC;
 	}
 
 	return startIndex;

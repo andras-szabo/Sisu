@@ -213,6 +213,8 @@
     <ResourceCompile Include="Sisu.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Resources\Textures\testTexture.dds" />
+    <Image Include="Resources\Textures\WoodCrate01.dds" />
     <Image Include="Sisu.ico" />
     <Image Include="small.ico" />
   </ItemGroup>

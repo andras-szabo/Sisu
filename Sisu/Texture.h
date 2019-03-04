@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include "D3DRenderer.h"
 #include "DDSTextureLoader.h"
+
+class IRenderer;
 
 struct Texture
 {

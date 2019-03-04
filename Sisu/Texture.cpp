@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
+#include "IRenderer.h"
+#include "d3dUtil.h"
 
 void TextureManager::LoadFromFile(const std::string& name, const std::wstring& fileName)
 {
@@ -7,7 +9,9 @@ void TextureManager::LoadFromFile(const std::string& name, const std::wstring& f
 	ThrowIfFailed(
 		DirectX::CreateDDSTextureFromFile12(
 			_renderer->GetDevice(), _renderer->GetCommandList(),
-			texPtr->fileName.c_str(), texPtr->resource, texPtr->uploadHeap)
+			texPtr->fileName.c_str(), 
+			texPtr->resource, 
+			texPtr->uploadHeap)
 	);
 
 	_map[name] = std::move(texPtr);
@@ -30,6 +34,7 @@ void TextureManager::UploadToHeap(const std::string& name)
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = texture->resource->GetDesc().MipLevels;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	srvDesc.Texture2D.PlaneSlice = 0;
 
 	_renderer->GetDevice()->CreateShaderResourceView(texture->resource.Get(), &srvDesc, hDescriptor);
 	_textureInHeapCount++;

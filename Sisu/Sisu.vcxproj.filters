@@ -180,5 +180,11 @@
     <Image Include="Sisu.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Resources\Textures\WoodCrate01.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\Textures\testTexture.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

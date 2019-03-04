@@ -18,6 +18,7 @@
 #include "WindowManager.h"
 #include "GameTimer.h"
 #include "FrameResource.h"
+#include "Texture.h"
 
 class D3DCamera;
 class GameTimer;
@@ -78,7 +79,7 @@ public:
 		return _commandList == nullptr ? nullptr : _commandList.Get();
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetTextureHeap() { return _srvHeap; }
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetTextureHeap() { return _uiHeap; }
 	UINT GetSrvDescriptorSize() const { return _CbvSrvUavDescriptorSize; }
 
 protected:
@@ -99,6 +100,7 @@ protected:
 	void Init_11_BuildUIRenderItems(MeshGeometry* geometries);
 	void Init_12_BuildUIInputLayout();
 	void Init_13_BuildUIPSO();
+	void Init_14_BuildUITextures();
 
 	void CreateDepthBuffer();
 	void SetupViewport();
@@ -140,7 +142,6 @@ protected:
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _rtvHeap;	// render target descriptor heap
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _dsvHeap;	// depth and stencil buffer desc heap
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _srvHeap;	// shader resource view heap 
 
 	// We should wrap this desc heap into something that's easier to expand
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _uiHeap;	// ui-specific heap
@@ -168,6 +169,8 @@ protected:
 	std::vector<D3D12_VIEWPORT> _viewports;
 
 	std::unique_ptr<D3DLogger> _logger;
+	std::unique_ptr<TextureManager> _textureManager;
+
 	WindowManager* const _windowManager;
 	GameTimer* const _gameTimer;
 	ICameraService* const _cameraService;
