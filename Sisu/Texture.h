@@ -20,8 +20,10 @@ public:
 	TextureManager(IRenderer* renderer) : _renderer(renderer) {}
 	void LoadFromFile(const std::string& name, const std::wstring& fileName);
 	Texture* Get(const std::string& name);
+	void UploadToHeap(const std::string& name);
 	
 private:
 	IRenderer* _renderer;
+	UINT _textureInHeapCount = 0;
 	std::unordered_map<std::string, std::unique_ptr<Texture>> _map;
 };

@@ -78,6 +78,9 @@ public:
 		return _commandList == nullptr ? nullptr : _commandList.Get();
 	}
 
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetTextureHeap() { return _srvHeap; }
+	UINT GetSrvDescriptorSize() const { return _CbvSrvUavDescriptorSize; }
+
 protected:
 	virtual void OnResize() override;
 
