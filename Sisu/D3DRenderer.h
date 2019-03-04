@@ -112,6 +112,8 @@ protected:
 	void DrawUI(ID3D12GraphicsCommandList* cmdList);
 	void WaitForNextFrameResource();
 
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 1> GetStaticSamplers() const;
+
 protected:
 	ID3D12Resource* CurrentBackBuffer() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;

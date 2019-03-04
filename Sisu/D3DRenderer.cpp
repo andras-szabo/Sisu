@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <array>
 #include "D3DRenderer.h"
 #include "ICameraService.h"
 #include "IGUIService.h"
@@ -359,11 +360,24 @@ void D3DRenderer::Init_09_BuildUIConstantBufferViews()
 	}
 }
 
+std::array<const CD3DX12_STATIC_SAMPLER_DESC, 1> D3DRenderer::GetStaticSamplers() const
+{
+	const CD3DX12_STATIC_SAMPLER_DESC pointWrap(
+		0, // shader register
+		D3D12_FILTER_MIN_MAG_MIP_POINT,		// filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,	// address mode for U
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,	// address mode for V
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP		// address mode for W
+	);
+
+	return { pointWrap };
+}
+
 void D3DRenderer::Init_10_BuildUIRootSignature()
 {
 	//TODO - there's gotta be a better way of keeping track which
 	//		register is used for what. :(
-	CD3DX12_ROOT_PARAMETER slotRootParams[2];
+	CD3DX12_ROOT_PARAMETER slotRootParams[3];
 	CD3DX12_DESCRIPTOR_RANGE cbvTablePerPass;
 	cbvTablePerPass.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);		// per pass to register 0
 	slotRootParams[0].InitAsDescriptorTable(1, &cbvTablePerPass);
@@ -371,8 +385,15 @@ void D3DRenderer::Init_10_BuildUIRootSignature()
 	CD3DX12_DESCRIPTOR_RANGE cbvTablePerObject;
 	cbvTablePerObject.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);		// per object to register 1
 	slotRootParams[1].InitAsDescriptorTable(1, &cbvTablePerObject);
-	
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParams, 0, nullptr, 
+
+	CD3DX12_DESCRIPTOR_RANGE srvTable;
+	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	slotRootParams[2].InitAsDescriptorTable(1, &srvTable);
+
+	auto staticSamplers = GetStaticSamplers();
+
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParams, 
+		(UINT)staticSamplers.size(), staticSamplers.data(), 
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> serializedRootSignature = nullptr;
