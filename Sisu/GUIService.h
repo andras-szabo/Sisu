@@ -14,7 +14,7 @@ public:
 		_cameraService(camService),
 		_renderer(renderer)
 	{
-		D3DCamera camera;
+		D3DCamera camera(0.0f, 0.0f, 0.0f);
 
 		camera.isPerspective = false;
 		camera.isScreenSpaceUI = true;

@@ -656,7 +656,7 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 	//cameraCBVhandle.Offset(guiCamera.CbvIndex(), _CbvSrvUavDescriptorSize);
 	cameraCBVhandle.Offset(MaxTextureCount, _CbvSrvUavDescriptorSize);
 
-	_commandList->RSSetViewports(1, &guiCamera->viewport);
+	_commandList->RSSetViewports(1, &(guiCamera->viewport));
 	_commandList->SetGraphicsRootDescriptorTable(0, cameraCBVhandle);	// 0-> per pass => camera.
 
 	// ... this is where we'd call "DrawAllUIRenderItems". But for now:
@@ -675,19 +675,6 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 	auto cbvIndex = MaxTextureCount + perPassOffset + perFrameOffset + objectCBVindex;
 	auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
 	cbvHandle.Offset(cbvIndex, _CbvSrvUavDescriptorSize);
-
-	// So the problem, probably, is that there are two kinds of 
-	// descriptor heaps: CBV_SRV_UAV, and SAMPLER; and only one of each
-	// kind can be set at any given call. So I think what goes wrong is
-	// that I can't really set one descriptor table from one heap, for
-	// one of the root params, and then another table from another heap,
-	// for the other one. can i? I don't think so. Look: when I
-	// set the UI thing first, it ends up empty, but the thing is drawn,
-	// b/c the const buffer is set up OK. If I set the UI thing last,
-	// then the thing is not drawn - because the _srvHeap has no clue
-	// about where cbvHandle is pointing. I think.
-	// So maybe the next thing would be to use the _uiHeap for the
-	// ui textures too.
 
 	_commandList->SetGraphicsRootDescriptorTable(1, cbvHandle);			// 1-> per object stuff
 

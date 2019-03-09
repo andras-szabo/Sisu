@@ -40,7 +40,6 @@ bool BrickRenderer::Init()
 void BrickRenderer::Update(const GameTimer& gt)
 {
 	_cameraService->Update(gt);
-	//_gui->Update(gt);
 	WaitForNextFrameResource();
 	UpdateInstanceData();
 	UpdateUIInstanceData();

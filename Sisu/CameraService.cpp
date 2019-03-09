@@ -21,7 +21,7 @@ void CameraService::OnResize()
 
 void CameraService::CreateGUICamera(D3DCamera camera)
 {
-	_guiCamera = std::make_unique<D3DCamera>(std::move(camera));
+	_guiCamera = std::make_unique<D3DCamera>(camera);
 	
 	auto dimensions = _windowManager->Dimensions();
 	auto width = static_cast<float>(dimensions.first);
