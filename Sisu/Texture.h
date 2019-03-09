@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include "DDSTextureLoader.h"
 
-class IRenderer;
+struct IRenderer;
 
 struct Texture
 {

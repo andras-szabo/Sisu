@@ -178,6 +178,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TransformUpdateSystem.h" />
+    <ClInclude Include="UIElement.h" />
     <ClInclude Include="UIRenderItem.h" />
     <ClInclude Include="UploadBuffer.h" />
     <ClInclude Include="WindowManager.h" />

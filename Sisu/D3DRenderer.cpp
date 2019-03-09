@@ -3,6 +3,7 @@
 #include "D3DRenderer.h"
 #include "ICameraService.h"
 #include "IGUIService.h"
+#include "UIElement.h"
 
 bool D3DRenderer::Init()
 {
@@ -292,8 +293,12 @@ void D3DRenderer::Init_07_CreateRtvAndDsvDescriptorHeaps()
 
 void D3DRenderer::Init_08_CreateUIHeap()
 {
-	// For now: let's just have 1 camera, 1 object
-	UINT numDescriptors = MaxTextureCount + FrameResourceCount * 2;
+	// How many views do we need?
+	// One for each texture, that's independent of rame resources.
+	// Then, per frame resource:
+	//		- one for the camera
+	//		- one for each ui item
+	UINT numDescriptors = MaxTextureCount + FrameResourceCount * (1 + MaxUIObjectCount);
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDescriptor;
 
 	cbvHeapDescriptor.NumDescriptors = numDescriptors;
@@ -333,7 +338,6 @@ void D3DRenderer::Init_09_BuildUIConstantBufferViews()
 		_d3dDevice->CreateConstantBufferView(&cbvDesc, handle);
 	}
 
-	const int UI_OBJECT_COUNT = 1;
 	auto passCBVoffset = FrameResourceCount;
 	auto objectCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(FRObjectConstants));
 
@@ -345,9 +349,9 @@ void D3DRenderer::Init_09_BuildUIConstantBufferViews()
 		auto uiConstantBuffer = _frameResources[frameIndex]->UIObjectConstantBuffer->Resource();
 		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = uiConstantBuffer->GetGPUVirtualAddress();
 
-		for (int i = 0; i < UI_OBJECT_COUNT; ++i)
+		for (int i = 0; i < MaxUIObjectCount; ++i)
 		{
-			auto heapIndex = MaxTextureCount + passCBVoffset + (UI_OBJECT_COUNT * frameIndex) + i;
+			auto heapIndex = MaxTextureCount + passCBVoffset + (MaxUIObjectCount * frameIndex) + i;
 			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_uiHeap->GetCPUDescriptorHandleForHeapStart());
 			handle.Offset(heapIndex, _CbvSrvUavDescriptorSize);
 
@@ -416,6 +420,47 @@ void D3DRenderer::Init_10_BuildUIRootSignature()
 	);
 }
 
+void D3DRenderer::AddUIRenderItem(const UIElement& ui)
+{
+	UIRenderItem quad;
+
+	DirectX::XMFLOAT4X4 xm
+		(ui.scale.x,	0.0f,			0.0f, 0.0f,
+		 0.0f,			ui.scale.y,		0.0f, 0.0f,
+		 0.0f,			0.0f,			1.0f, 0.0f,
+		 ui.position.x, ui.position.y,	0.0f, 1.0f);
+
+	DirectX::XMStoreFloat4x4(&quad.World, DirectX::XMLoadFloat4x4(&xm));
+
+	quad.Geo = _geometries["shapeGeo"].get();
+	quad.PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	SubmeshGeometry q = quad.Geo->drawArgs["quad"];
+
+	quad.IndexCount = q.indexCount;
+	quad.StartIndexLocation = q.startIndexLocation;
+	quad.BaseVertexLocation = q.baseVertexLocation;
+
+	// CBVIndex should be: get first free CBV index,
+	// or take the next one.
+	std::size_t uiRenderItemCBVIndex = 0;
+	if (_freeUIRenderItemIndices.size() > 0)
+	{
+		uiRenderItemCBVIndex = _freeUIRenderItemIndices.top();
+		_freeUIRenderItemIndices.pop();
+
+		quad.SetCBVIndex(uiRenderItemCBVIndex);
+		_uiRenderItems[uiRenderItemCBVIndex] = quad;
+	}
+	else
+	{
+		uiRenderItemCBVIndex = _uiRenderItems.size();
+		quad.SetCBVIndex(uiRenderItemCBVIndex);
+		_uiRenderItems.push_back(quad);
+	}
+}
+
+//TODO - remove
 void D3DRenderer::Init_11_BuildUIRenderItems(MeshGeometry* geometries)
 {
 	//For now, just build 1.
@@ -629,16 +674,17 @@ void D3DRenderer::UpdateUIPassBuffer(const GameTimer& gt, const D3DCamera& uiCam
 
 void D3DRenderer::UpdateUIInstanceData()
 {
-	//TODO - keeping track of dirty frames
 	auto currentInstanceBuffer = _currentFrameResource->UIObjectConstantBuffer.get();
-	UINT bufferIndex = 0;
-	for (auto& renderItem : _uiRenderItems)
+
+	for (auto& uiRenderItem : _uiRenderItems)
 	{
-		DirectX::XMMATRIX worldMatrix = DirectX::XMLoadFloat4x4(&renderItem.World);
-		FRObjectConstants objConstants(worldMatrix);
-		objConstants.color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		objConstants.localScale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-		currentInstanceBuffer->CopyData(bufferIndex++, objConstants);
+		if (uiRenderItem.NumFramesDirty > 0)
+		{
+			DirectX::XMMATRIX worldMatrix = DirectX::XMLoadFloat4x4(&uiRenderItem.World);
+			UIObjectConstants objConstants(worldMatrix);
+			currentInstanceBuffer->CopyData(uiRenderItem.GetCBVIndex(), objConstants);
+			uiRenderItem.NumFramesDirty--;
+		}
 	}
 }
 
@@ -662,21 +708,6 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 	// ... this is where we'd call "DrawAllUIRenderItems". But for now:
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(FRObjectConstants));
 	auto objectCB = _currentFrameResource->UIObjectConstantBuffer->Resource();
-	auto mockUI = _uiRenderItems[0];
-
-	_commandList->IASetVertexBuffers(0, 1, &mockUI.Geo->GetVertexBufferView());
-	_commandList->IASetIndexBuffer(&mockUI.Geo->GetIndexBufferView());
-	_commandList->IASetPrimitiveTopology(mockUI.PrimitiveType);
-
-	auto objectCBVindex = mockUI.GetCBVIndex();
-	auto perPassOffset = FrameResourceCount;
-	auto perFrameOffset = _uiRenderItems.size() * _currentFrameResourceIndex;
-
-	auto cbvIndex = MaxTextureCount + perPassOffset + perFrameOffset + objectCBVindex;
-	auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
-	cbvHandle.Offset(cbvIndex, _CbvSrvUavDescriptorSize);
-
-	_commandList->SetGraphicsRootDescriptorTable(1, cbvHandle);			// 1-> per object stuff
 
 	//Region setting ui texture
 	//ID3D12DescriptorHeap* descHeaps[] = { _srvHeap.Get() };
@@ -686,9 +717,24 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 
 	_commandList->SetGraphicsRootDescriptorTable(2, tex);				// 2-> texture
 	//endregion
-	
-	_commandList->DrawIndexedInstanced(mockUI.IndexCount, 1, mockUI.StartIndexLocation,
-									   mockUI.BaseVertexLocation, 0);
+	for (const auto& uiRenderItem : _uiRenderItems)
+	{
+		_commandList->IASetVertexBuffers(0, 1, &uiRenderItem.Geo->GetVertexBufferView());
+		_commandList->IASetIndexBuffer(&uiRenderItem.Geo->GetIndexBufferView());
+		_commandList->IASetPrimitiveTopology(uiRenderItem.PrimitiveType);
+
+		auto objectCBVindex = uiRenderItem.GetCBVIndex();
+		auto perPassOffset = FrameResourceCount;
+		auto perFrameOffset = MaxUIObjectCount * _currentFrameResourceIndex;
+
+		auto cbvIndex = MaxTextureCount + perPassOffset + perFrameOffset + objectCBVindex;
+		auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
+		cbvHandle.Offset(cbvIndex, _CbvSrvUavDescriptorSize);
+
+		_commandList->SetGraphicsRootDescriptorTable(1, cbvHandle);			// 1-> per object stuff
+		_commandList->DrawIndexedInstanced(uiRenderItem.IndexCount, 1, uiRenderItem.StartIndexLocation,
+										   uiRenderItem.BaseVertexLocation, 0);
+	}
 }
 
 void D3DRenderer::WaitForNextFrameResource()

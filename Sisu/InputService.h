@@ -23,7 +23,7 @@ public:
 	Point GetMouseDelta() const override;
 	bool GetMouseButton(int btn) const override;
 
-	virtual bool GetKeyDown(WPARAM key) const override;
+	virtual bool GetKeyDown(KeyCode key) const override;
 	virtual bool GetKeyUp(WPARAM key) const override;
 
 	virtual void OnMouseDown(WPARAM buttonState, int x, int y) override;

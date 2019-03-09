@@ -21,7 +21,9 @@ bool BrickRenderer::Init()
 	BuildFrameResources();
 	D3DRenderer::Init_09_BuildUIConstantBufferViews();
 	D3DRenderer::Init_10_BuildUIRootSignature();
-	D3DRenderer::Init_11_BuildUIRenderItems(_geometries["shapeGeo"].get());
+
+	//D3DRenderer::Init_11_BuildUIRenderItems(_geometries["shapeGeo"].get());
+
 	D3DRenderer::Init_12_BuildUIInputLayout();
 	D3DRenderer::Init_13_BuildUIPSO();
 	D3DRenderer::Init_14_BuildUITextures();
@@ -158,7 +160,10 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	auto uiCam = _cameraService->GetGUICamera();
 	UpdateUIPassBuffer(gt, *uiCam);
 	ClearRTVDSVforCamera(_commandList.Get(), *uiCam);
-	DrawUI(_commandList.Get());
+	if (_uiRenderItems.size() > 0)
+	{
+		DrawUI(_commandList.Get());
+	}
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	ThrowIfFailed(_commandList->Close());
@@ -249,7 +254,7 @@ void BrickRenderer::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
 	auto box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 0);
-	auto quad = geoGen.CreateQuad(0.0f, 0.0f, 0.5f, 1.0f, 0.5f);
+	auto quad = geoGen.CreateQuad(0.0f, 0.0f, 1.0f, 1.0f, 0.5f);
 
 	UINT boxVertexOffset = 0;
 	UINT boxIndexOffset = 0;
@@ -332,7 +337,8 @@ void BrickRenderer::BuildFrameResources()
 	for (int i = 0; i < FrameResourceCount; ++i)
 	{
 		_frameResources.push_back(
-			std::make_unique<FrameResource>(_d3dDevice.Get(), passCount, cbObjectCount, MaxInstancedObjectCount)
+			std::make_unique<FrameResource>(_d3dDevice.Get(), passCount, cbObjectCount, 
+											MaxInstancedObjectCount, MaxUIObjectCount)
 		);
 	}
 }

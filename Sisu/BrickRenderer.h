@@ -60,7 +60,6 @@ private:
 private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC> _inputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>> _shaders;
-	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> _geometries;
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> _PSOs;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _cbvHeap = nullptr;

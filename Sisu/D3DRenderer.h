@@ -7,6 +7,7 @@
 
 #include "IRenderer.h"
 #include <vector>
+#include <stack>
 #include <assert.h>
 #include <d3d12.h>
 #include <wrl.h>
@@ -19,32 +20,12 @@
 #include "GameTimer.h"
 #include "FrameResource.h"
 #include "Texture.h"
+#include "UIRenderItem.h"
 
 class D3DCamera;
 class GameTimer;
 class ICameraService;
-
-struct UIRenderItem
-{
-	UIRenderItem() = default;
-	DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
-
-	//TODO = NumFramesDirty should equal to renderer's FrameResourceCount,
-	//		 but FFS dependencies
-	int NumFramesDiry = 3;
-	MeshGeometry* Geo = nullptr;
-	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-	UINT IndexCount = 0;
-	UINT StartIndexLocation = 0;
-	int BaseVertexLocation = 0;
-
-	void SetCBVIndex(UINT index) { _objectCBIndex = index; }
-	UINT GetCBVIndex() const { return _objectCBIndex; }
-
-private:
-	UINT _objectCBIndex;
-};
+struct UIElement;
 
 class D3DRenderer : public IRenderer
 {
@@ -52,6 +33,7 @@ public:
 	static const int SwapChainBufferCount = 2;
 	static const int FrameResourceCount = 3;
 	static const int MaxTextureCount = 128;
+	static const UINT MaxUIObjectCount = 128;
 
 	D3DRenderer(WindowManager* const windowManager, 
 				GameTimer* const gameTimer, 
@@ -69,12 +51,10 @@ public:
 
 	virtual bool Init() override;
 	virtual bool IsSetup() const override { return _d3dDevice != nullptr; }
+	virtual void AddUIRenderItem(const UIElement& uiElement) override;
 
 	ID3D12Device* GetDevice() { return _d3dDevice == nullptr ? nullptr : _d3dDevice.Get(); }
-	ID3D12GraphicsCommandList* GetCommandList()
-	{
-		return _commandList == nullptr ? nullptr : _commandList.Get();
-	}
+	ID3D12GraphicsCommandList* GetCommandList() { return _commandList == nullptr ? nullptr : _commandList.Get(); }
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetTextureHeap() { return _uiHeap; }
 	UINT GetSrvDescriptorSize() const { return _CbvSrvUavDescriptorSize; }
@@ -147,7 +127,10 @@ protected:
 	std::vector<D3D12_INPUT_ELEMENT_DESC> _uiInputLayout;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState>_uiPSO;
 
+	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> _geometries;
+
 	std::vector<UIRenderItem> _uiRenderItems;
+	std::stack<std::size_t> _freeUIRenderItemIndices;
 	PassConstants _uiPassConstants;
 
 	UINT _RtvDescriptorSize = 0;			// render target descriptor size

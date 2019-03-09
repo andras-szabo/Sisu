@@ -9,6 +9,7 @@ enum class KeyCode : WPARAM
 	Q = 0x51,
 	R = 0x52,
 	S = 0x53,
+	U = 0x55,
 	W = 0x57,
 
 	One = 0x31,
@@ -26,7 +27,7 @@ public:
 		float x, y;
 	};
 
-	virtual bool GetKeyDown(WPARAM key) const = 0;
+	virtual bool GetKeyDown(KeyCode key) const = 0;
 	virtual bool GetKeyUp(WPARAM key) const = 0;
 
 	virtual bool GetKey(KeyCode key) const = 0;

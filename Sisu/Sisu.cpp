@@ -182,6 +182,16 @@ void SisuApp::Update()
 
 	_renderer->Update(gt);
 	_renderer->SetWireframe(_inputService->GetKey(KeyCode::One));
+
+	//TODO - move to its proper lace
+	if (_inputService->GetKey(KeyCode::U) && _inputService->GetKeyDown(KeyCode::U))
+	{
+		auto x = rand() % 50 * 0.01f;
+		auto y = rand() % 50 * 0.01f;
+		auto w = max(rand() % 50 * 0.01f, 0.1f);
+		auto h = max(rand() % 50 * 0.01f, 0.1f);
+		_gui->CreateUIElement(Sisu::Vector3(x, y, 0.0f), Sisu::Vector3(0.1f, 0.1f, 1.0f));
+	}
 }
 
 void SisuApp::Draw()

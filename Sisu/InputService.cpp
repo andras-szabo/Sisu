@@ -40,9 +40,11 @@ bool InputService::GetKey(KeyCode key) const
 	return _keyPressFrame[virtualKeyCode] > _keyReleaseFrame[virtualKeyCode];
 }
 
-bool InputService::GetKeyDown(WPARAM virtualKeyCode) const
+bool InputService::GetKeyDown(KeyCode key) const
 {
-	return _keyPressFrame[virtualKeyCode] == _gameTimer->FrameCount();
+	auto virtualKeyCode = static_cast<WPARAM>(key);
+	auto frameCount = _gameTimer->FrameCount();
+	return _keyPressFrame[virtualKeyCode] == frameCount - 1;
 }
 
 bool InputService::GetKeyUp(WPARAM virtualKeyCode) const

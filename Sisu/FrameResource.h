@@ -21,6 +21,16 @@ struct FRObjectConstants
 	DirectX::XMFLOAT3 localScale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 };
 
+struct UIObjectConstants
+{
+	UIObjectConstants(const DirectX::XMMATRIX& worldMatrixToInit)
+	{
+		DirectX::XMStoreFloat4x4(&worldMatrix, DirectX::XMMatrixTranspose(worldMatrixToInit));
+	}
+
+	DirectX::XMFLOAT4X4 worldMatrix = MathHelper::Identity4x4();
+};
+
 struct PassConstants
 {
 	DirectX::XMFLOAT4X4 view = MathHelper::Identity4x4();
@@ -42,7 +52,8 @@ struct PassConstants
 
 struct FrameResource
 {
-	FrameResource(ID3D12Device* device, UINT passCount, UINT cbObjectCount, UINT maxInstancedObjectCount)
+	FrameResource(ID3D12Device* device, UINT passCount, UINT cbObjectCount, 
+				  UINT maxInstancedObjectCount, UINT maxUIObjectCount)
 		: _objectCount (0)
 	{
 		ThrowIfFailed(
@@ -55,8 +66,7 @@ struct FrameResource
 		UIPassConstantBuffer = std::make_unique<UploadBuffer<PassConstants>>(device, 1, true);
 
 		// For now, let's just create 1 UI object
-		UIObjectConstantBuffer = std::make_unique<UploadBuffer<FRObjectConstants>>(device, 1, true);
-
+		UIObjectConstantBuffer = std::make_unique<UploadBuffer<UIObjectConstants>>(device, maxUIObjectCount, true);
 
 		if (cbObjectCount > 0)
 		{
@@ -94,7 +104,7 @@ public:
 	std::unique_ptr<UploadBuffer<FRObjectConstants>> instanceBuffer = nullptr;
 
 	std::unique_ptr<UploadBuffer<PassConstants>> UIPassConstantBuffer = nullptr;
-	std::unique_ptr<UploadBuffer<FRObjectConstants>> UIObjectConstantBuffer = nullptr;
+	std::unique_ptr<UploadBuffer<UIObjectConstants>> UIObjectConstantBuffer = nullptr;
 
 	UINT64 fence = 0;
 

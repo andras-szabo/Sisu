@@ -1,4 +1,5 @@
 #pragma once
+#include <stack>
 #include "IGUIService.h"
 #include "Camera.h"
 #include "ICameraService.h"
@@ -33,10 +34,14 @@ public:
 
 	virtual void OnResize() override;
 	virtual void Update(const GameTimer& gt) override;
+	virtual std::size_t CreateUIElement(Sisu::Vector3 position, Sisu::Vector3 localScale) override;
 
 private:
 	IInputService* const _inputService;
 	ICameraService* const _cameraService;
 	WindowManager* const _windowManager;
 	IRenderer* const _renderer;
+
+	std::vector<UIElement> _uiElements;
+	std::stack<std::size_t> _freeUIElementPositions;
 };

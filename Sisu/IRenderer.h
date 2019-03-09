@@ -2,9 +2,10 @@
 #include <wrl/client.h>
 
 class GameTimer;
-class ID3D12Device;
-class ID3D12GraphicsCommandList;
-class ID3D12DescriptorHeap;
+struct ID3D12Device;
+struct ID3D12GraphicsCommandList;
+struct ID3D12DescriptorHeap;
+struct UIElement;
 
 struct IRenderer
 {
@@ -20,4 +21,6 @@ struct IRenderer
 	virtual void Draw(const GameTimer& gt) = 0;
 	virtual void SetDirty() = 0;
 	virtual void SetWireframe(bool state) = 0;
+
+	virtual void AddUIRenderItem(const UIElement& uiElement) = 0;
 };
