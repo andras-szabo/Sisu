@@ -460,34 +460,6 @@ void D3DRenderer::AddUIRenderItem(const UIElement& ui)
 	}
 }
 
-//TODO - remove
-void D3DRenderer::Init_11_BuildUIRenderItems(MeshGeometry* geometries)
-{
-	//For now, just build 1.
-	UIRenderItem quad;
-
-	auto m = Sisu::Matrix4::Identity();
-	// Oh bazmeg ez mennyire elbaszott mar
-
-	DirectX::XMFLOAT4X4 xm(m.r0.x, m.r0.y, m.r0.z, m.r0.w,
-		m.r1.x, m.r1.y, m.r1.z, m.r1.w,
-		m.r2.x, m.r2.y, m.r2.z, m.r2.w,
-		m.r3.x, m.r3.y, m.r3.z, m.r3.w);
-
-	DirectX::XMStoreFloat4x4(&quad.World, DirectX::XMLoadFloat4x4(&xm));
-	quad.SetCBVIndex(0);
-	quad.Geo = geometries;
-	quad.PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-	SubmeshGeometry q = geometries->drawArgs["quad"];
-
-	quad.IndexCount = q.indexCount;
-	quad.StartIndexLocation = q.startIndexLocation;
-	quad.BaseVertexLocation = q.baseVertexLocation;
-
-	_uiRenderItems.push_back(quad);
-}
-
 void D3DRenderer::Init_12_BuildUIInputLayout()
 {
 	_uiShaders["VS"] = d3dUtil::CompileShader(L"Shaders\\ui.hlsl", nullptr, "VS", "vs_5_1");
@@ -699,8 +671,9 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 
 	auto guiCamera = _cameraService->GetGUICamera();
 	auto cameraCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
+	//TODO what's up with the cam's per-pass stuff
 	//cameraCBVhandle.Offset(guiCamera.CbvIndex(), _CbvSrvUavDescriptorSize);
-	cameraCBVhandle.Offset(MaxTextureCount, _CbvSrvUavDescriptorSize);
+	cameraCBVhandle.Offset(MaxTextureCount + _currentFrameResourceIndex, _CbvSrvUavDescriptorSize);
 
 	_commandList->RSSetViewports(1, &(guiCamera->viewport));
 	_commandList->SetGraphicsRootDescriptorTable(0, cameraCBVhandle);	// 0-> per pass => camera.

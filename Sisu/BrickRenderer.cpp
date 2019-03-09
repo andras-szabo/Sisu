@@ -21,9 +21,6 @@ bool BrickRenderer::Init()
 	BuildFrameResources();
 	D3DRenderer::Init_09_BuildUIConstantBufferViews();
 	D3DRenderer::Init_10_BuildUIRootSignature();
-
-	//D3DRenderer::Init_11_BuildUIRenderItems(_geometries["shapeGeo"].get());
-
 	D3DRenderer::Init_12_BuildUIInputLayout();
 	D3DRenderer::Init_13_BuildUIPSO();
 	D3DRenderer::Init_14_BuildUITextures();

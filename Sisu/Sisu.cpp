@@ -188,9 +188,10 @@ void SisuApp::Update()
 	{
 		auto x = rand() % 50 * 0.01f;
 		auto y = rand() % 50 * 0.01f;
-		auto w = max(rand() % 50 * 0.01f, 0.1f);
-		auto h = max(rand() % 50 * 0.01f, 0.1f);
-		_gui->CreateUIElement(Sisu::Vector3(x, y, 0.0f), Sisu::Vector3(0.1f, 0.1f, 1.0f));
+		auto w = rand() % 50 * 0.01f; if (w <= 0.0f) { w = 0.1f; }
+		auto h = rand() % 50 * 0.01f; if (h <= 0.0f) { h = 0.1f; }
+
+		_gui->CreateUIElement(Sisu::Vector3(x, y, 0.0f), Sisu::Vector3(w, h, 1.0f));
 	}
 }
 

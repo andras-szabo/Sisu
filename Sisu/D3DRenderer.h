@@ -74,7 +74,6 @@ protected:
 	void Init_08_CreateUIHeap();
 	void Init_09_BuildUIConstantBufferViews();
 	void Init_10_BuildUIRootSignature();
-	void Init_11_BuildUIRenderItems(MeshGeometry* geometries);
 	void Init_12_BuildUIInputLayout();
 	void Init_13_BuildUIPSO();
 	void Init_14_BuildUITextures();
