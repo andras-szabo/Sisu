@@ -1,34 +1,42 @@
 #pragma once
 #include "IGUIService.h"
 #include "Camera.h"
+#include "ICameraService.h"
 
 class GUIService : public IGUIService
 {
 public:
-	GUIService(IInputService* const inputService, WindowManager* const windowManager):
-		_inputService(inputService), _windowManager(windowManager)
+	GUIService(IInputService* const inputService, WindowManager* const windowManager, 
+			   ICameraService* const camService,
+			   IRenderer* const renderer):
+		_inputService(inputService), 
+		_windowManager(windowManager),
+		_cameraService(camService),
+		_renderer(renderer)
 	{
-		_camera.isPerspective = false;
-		_camera.isScreenSpaceUI = true;
+		D3DCamera camera;
+
+		camera.isPerspective = false;
+		camera.isScreenSpaceUI = true;
 
 		auto fullscreen = _windowManager->Dimensions();
-		_camera.SetViewport(Sisu::Vector4(0.0f, 0.0f, 1.0f, 1.0f),
+		camera.SetViewport(Sisu::Vector4(0.0f, 0.0f, 1.0f, 1.0f),
 			static_cast<float>(fullscreen.first),
 			static_cast<float>(fullscreen.second),
 			0.0f, 1.0f);
 
-		_camera.clearDepthOnly = true;
-		_camera.SetCameraIndex(0);
+		camera.clearDepthOnly = true;
+		camera.SetCameraIndex(0);
 
-		OnResize();
+		_cameraService->CreateGUICamera(camera);
 	}
 
-	virtual const D3DCamera& GetCamera() const override { return _camera; }
 	virtual void OnResize() override;
 	virtual void Update(const GameTimer& gt) override;
 
 private:
 	IInputService* const _inputService;
+	ICameraService* const _cameraService;
 	WindowManager* const _windowManager;
-	D3DCamera _camera = D3DCamera(0.0f, 0.0f, 0.0f);
+	IRenderer* const _renderer;
 };

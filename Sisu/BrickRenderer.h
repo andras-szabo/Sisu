@@ -24,9 +24,8 @@ public:
 	BrickRenderer(WindowManager* const windowManager, 
 		GameTimer* const gameTimer, 
 		Arena<GameObject>* const bricks,
-		ICameraService* const cameraService,
-		IGUIService* const guiService) :
-		D3DRenderer(windowManager, gameTimer, cameraService, guiService),
+		ICameraService* const cameraService):
+		D3DRenderer(windowManager, gameTimer, cameraService), 
 		_bricks (bricks)
 	{
 	}

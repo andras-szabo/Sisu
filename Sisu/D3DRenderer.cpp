@@ -139,7 +139,9 @@ void D3DRenderer::OnResize()
 	SetupViewport();
 	
 	_cameraService->OnResize();
-	_gui->OnResize();
+
+	//TODO: Call on callback
+	//_gui->OnResize();
 }
 
 void D3DRenderer::Init_00_CreateDXGIFactory()
@@ -649,12 +651,12 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 	ID3D12DescriptorHeap* descriptorHeaps[] = { _uiHeap.Get() };
 	_commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	auto guiCamera = _gui->GetCamera();
+	auto guiCamera = _cameraService->GetGUICamera();
 	auto cameraCBVhandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
 	//cameraCBVhandle.Offset(guiCamera.CbvIndex(), _CbvSrvUavDescriptorSize);
 	cameraCBVhandle.Offset(MaxTextureCount, _CbvSrvUavDescriptorSize);
 
-	_commandList->RSSetViewports(1, &guiCamera.viewport);
+	_commandList->RSSetViewports(1, &guiCamera->viewport);
 	_commandList->SetGraphicsRootDescriptorTable(0, cameraCBVhandle);	// 0-> per pass => camera.
 
 	// ... this is where we'd call "DrawAllUIRenderItems". But for now:

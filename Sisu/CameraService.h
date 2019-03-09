@@ -23,8 +23,10 @@ public:
 	}
 
 	D3DCamera* GetActiveCamera() override { return &_cameras[0]; }
+	D3DCamera* GetGUICamera() override { return _guiCamera.get(); }
 	std::vector<D3DCamera> GetActiveCameras() const override { return _cameras; }
 
+	virtual void CreateGUICamera(D3DCamera camera) override;
 	virtual void Update(const GameTimer& gt) override;
 	virtual void OnResize() override;
 	virtual void SetCameras(const std::vector<D3DCamera> cameras) override;
@@ -38,4 +40,6 @@ private:
 	WindowManager* const _windowManager;
 	std::vector<D3DCamera> _cameras;
 	std::size_t _activeCameraIndex = 0;
+
+	std::unique_ptr<D3DCamera> _guiCamera;
 };

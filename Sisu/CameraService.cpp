@@ -7,10 +7,27 @@ void CameraService::OnResize()
 	auto dimensions = _windowManager->Dimensions();
 	auto width = static_cast<float>(dimensions.first);
 	auto height = static_cast<float>(dimensions.second);
+
 	for (auto& camera : _cameras)
 	{
 		camera.OnResize(width, height);
 	}
+
+	if (_guiCamera != nullptr)
+	{
+		_guiCamera->OnResize(width, height);
+	}
+}
+
+void CameraService::CreateGUICamera(D3DCamera camera)
+{
+	_guiCamera = std::make_unique<D3DCamera>(std::move(camera));
+	
+	auto dimensions = _windowManager->Dimensions();
+	auto width = static_cast<float>(dimensions.first);
+	auto height = static_cast<float>(dimensions.second);
+
+	_guiCamera->OnResize(width, height);
 }
 
 void CameraService::SetCameras(const std::vector<D3DCamera> cameras)
@@ -29,6 +46,7 @@ void CameraService::Update(const GameTimer& gt)
 {
 	static Sisu::Vector3 inputAxes;
 	static Sisu::Vector3 inputEuler;
+	static Sisu::Vector3 nullInput;
 
 	auto a = _inputService->GetKey(KeyCode::A);
 	auto d = _inputService->GetKey(KeyCode::D);
@@ -67,4 +85,5 @@ void CameraService::Update(const GameTimer& gt)
 	}
 
 	_cameras[_activeCameraIndex].Update(gt, inputAxes, inputEuler);
+	_guiCamera->Update(gt, nullInput, nullInput);
 }

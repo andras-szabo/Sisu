@@ -40,7 +40,7 @@ bool BrickRenderer::Init()
 void BrickRenderer::Update(const GameTimer& gt)
 {
 	_cameraService->Update(gt);
-	_gui->Update(gt);
+	//_gui->Update(gt);
 	WaitForNextFrameResource();
 	UpdateInstanceData();
 	UpdateUIInstanceData();
@@ -156,9 +156,9 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	// And now, on top of everything, draw the UI
 	// But for this we need to update things
 	// Something like UpdateMainPassCB
-	auto uiCam = _gui->GetCamera();
-	UpdateUIPassBuffer(gt, uiCam);
-	ClearRTVDSVforCamera(_commandList.Get(), uiCam);
+	auto uiCam = _cameraService->GetGUICamera();
+	UpdateUIPassBuffer(gt, *uiCam);
+	ClearRTVDSVforCamera(_commandList.Get(), *uiCam);
 	DrawUI(_commandList.Get());
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));

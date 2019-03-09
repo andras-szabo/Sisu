@@ -23,7 +23,6 @@
 class D3DCamera;
 class GameTimer;
 class ICameraService;
-class IGUIService;
 
 struct UIRenderItem
 {
@@ -56,12 +55,10 @@ public:
 
 	D3DRenderer(WindowManager* const windowManager, 
 				GameTimer* const gameTimer, 
-				ICameraService* const cameraService,
-				IGUIService* const guiService):
+				ICameraService* const cameraService):
 		_windowManager(windowManager),
 		_gameTimer(gameTimer),
-		_cameraService(cameraService),
-		_gui(guiService)
+		_cameraService(cameraService)
 	{
 	}
 
@@ -174,5 +171,4 @@ protected:
 	WindowManager* const _windowManager;
 	GameTimer* const _gameTimer;
 	ICameraService* const _cameraService;
-	IGUIService* const _gui;
 };

@@ -15,11 +15,8 @@ bool SisuApp::Init(int width, int height, const std::wstring& title)
 	success &= InitInputService(_gameTimer.get());
 	success &= InitWindowManager(_inputService.get(), width, height, title);
 	success &= InitCameraService(_inputService.get(), _windowManager.get());
-	success &= InitGUIService(_inputService.get(), _windowManager.get());
-	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), 
-							_gameObjects.get(), _cameraService.get(),
-							_gui.get());
-
+	success &= InitRenderer(_windowManager.get(), _gameTimer.get(), _gameObjects.get(), _cameraService.get());
+	success &= InitGUIService(_inputService.get(), _windowManager.get(), _cameraService.get(), _renderer.get());
 	success &= InitTransformUpdateSystem();
 
 	// TODO - also, proper setup
@@ -113,9 +110,17 @@ bool SisuApp::InitCameraService(IInputService* const inputService, WindowManager
 	return _cameraService != nullptr;
 }
 
-bool SisuApp::InitGUIService(IInputService * const inputService, WindowManager * const windowManager)
+bool SisuApp::InitRenderer(WindowManager* const windowManager, GameTimer* const gt,
+	Arena<GameObject>* const arena, ICameraService* const camService)
 {
-	_gui = std::make_unique<GUIService>(inputService, windowManager);
+	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena, camService);
+	return _renderer->Init();
+}
+
+bool SisuApp::InitGUIService(IInputService * const inputService, WindowManager * const windowManager, 
+							 ICameraService* const camService, IRenderer* const renderer)
+{
+	_gui = std::make_unique<GUIService>(inputService, windowManager, camService, renderer);
 	return _gui != nullptr;
 }
 
@@ -123,13 +128,6 @@ bool SisuApp::InitWindowManager(IInputService* const inputService, int width, in
 {
 	_windowManager = std::make_unique<WindowManager>(*this, inputService, width, height, title);
 	return _windowManager->IsSetup();
-}
-
-bool SisuApp::InitRenderer(WindowManager* const windowManager, GameTimer* const gt, 
-						   Arena<GameObject>* const arena, ICameraService* const camService, IGUIService* const guiService)
-{
-	_renderer = std::make_unique<BrickRenderer>(windowManager, gt, arena, camService, guiService);
-	return _renderer->Init();
 }
 
 bool SisuApp::InitTransformUpdateSystem()
