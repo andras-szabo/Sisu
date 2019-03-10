@@ -51,7 +51,8 @@ public:
 
 	virtual bool Init() override;
 	virtual bool IsSetup() const override { return _d3dDevice != nullptr; }
-	virtual void AddUIRenderItem(const UIElement& uiElement) override;
+	virtual std::size_t AddUIRenderItem(const UIElement& uiElement) override;
+	virtual void RefreshUIItem(const UIElement& uiElement) override;
 
 	ID3D12Device* GetDevice() { return _d3dDevice == nullptr ? nullptr : _d3dDevice.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList() { return _commandList == nullptr ? nullptr : _commandList.Get(); }

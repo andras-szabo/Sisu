@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <wrl/client.h>
 
 class GameTimer;
@@ -22,5 +23,6 @@ struct IRenderer
 	virtual void SetDirty() = 0;
 	virtual void SetWireframe(bool state) = 0;
 
-	virtual void AddUIRenderItem(const UIElement& uiElement) = 0;
+	virtual std::size_t AddUIRenderItem(const UIElement& uiElement) = 0;
+	virtual void RefreshUIItem(const UIElement& uiElement) = 0;
 };

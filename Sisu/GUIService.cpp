@@ -6,9 +6,8 @@
 
 std::size_t GUIService::CreateUIElement(Sisu::Vector3 position, Sisu::Vector3 localScale)
 {
-	UIElement newElement;
-	newElement.position = position;
-	newElement.scale = localScale;
+	auto dimensions = _windowManager->Dimensions();
+	UIElement newElement(position, localScale, dimensions);
 
 	std::size_t index = 0;
 	if (_freeUIElementPositions.empty())
@@ -23,13 +22,23 @@ std::size_t GUIService::CreateUIElement(Sisu::Vector3 position, Sisu::Vector3 lo
 		_uiElements[index] = newElement;
 	}
 
-	_renderer->AddUIRenderItem(_uiElements[index]);
+	auto renderItemIndex = _renderer->AddUIRenderItem(_uiElements[index]);
+	_uiElements[index].renderItemIndex = renderItemIndex;
 
 	return index;
 }
 
 void GUIService::OnResize()
 {
+	auto dimensions = _windowManager->Dimensions();
+	auto width = static_cast<float>(dimensions.first);
+	auto height = static_cast<float>(dimensions.second);
+
+	for (auto& uiElement : _uiElements)
+	{
+		uiElement.OnResize(width, height);
+		_renderer->RefreshUIItem(uiElement);
+	}
 }
 
 void GUIService::Update(const GameTimer& gt)

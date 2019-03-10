@@ -213,6 +213,11 @@ void SisuApp::Pause(bool newState)
 
 void SisuApp::OnResize()
 {
+	if (_gui != nullptr)
+	{
+		_gui->OnResize();
+	}
+
 	if (_renderer != nullptr)
 	{
 		_renderer->OnResize();

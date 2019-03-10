@@ -420,7 +420,21 @@ void D3DRenderer::Init_10_BuildUIRootSignature()
 	);
 }
 
-void D3DRenderer::AddUIRenderItem(const UIElement& ui)
+void D3DRenderer::RefreshUIItem(const UIElement& ui)
+{
+	auto& renderItem = _uiRenderItems[ui.renderItemIndex];
+
+	DirectX::XMFLOAT4X4 xm
+	(ui.scale.x, 0.0f, 0.0f, 0.0f,
+		0.0f, ui.scale.y, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		ui.position.x, ui.position.y, 0.0f, 1.0f);
+
+	DirectX::XMStoreFloat4x4(&renderItem.World, DirectX::XMLoadFloat4x4(&xm));
+	renderItem.NumFramesDirty = FrameResourceCount;
+}
+
+std::size_t D3DRenderer::AddUIRenderItem(const UIElement& ui)
 {
 	UIRenderItem quad;
 
@@ -458,6 +472,8 @@ void D3DRenderer::AddUIRenderItem(const UIElement& ui)
 		quad.SetCBVIndex(uiRenderItemCBVIndex);
 		_uiRenderItems.push_back(quad);
 	}
+
+	return uiRenderItemCBVIndex;
 }
 
 void D3DRenderer::Init_12_BuildUIInputLayout()
