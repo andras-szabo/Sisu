@@ -114,8 +114,11 @@ void BrickRenderer::ClearRTVDSVforCamera(ID3D12GraphicsCommandList* cmdList, con
 	cmdList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &rtvRect);
 }
 
-void BrickRenderer::Draw(const GameTimer& gt)
+std::size_t BrickRenderer::Draw(const GameTimer& gt)
 {
+	static std::size_t drawCallCount = 0;
+	drawCallCount = 0;
+
 	//--> ResetCommandAllocator
 	auto commandAllocator = _currentFrameResource->commandAllocator;
 	ThrowIfFailed(commandAllocator->Reset());
@@ -149,6 +152,7 @@ void BrickRenderer::Draw(const GameTimer& gt)
 		_commandList->SetGraphicsRootDescriptorTable(0, passCBVhandle);
 
 		DrawBricks(_commandList.Get());
+		drawCallCount++;
 	}
 
 	// And now, on top of everything, draw the UI
@@ -159,7 +163,7 @@ void BrickRenderer::Draw(const GameTimer& gt)
 	ClearRTVDSVforCamera(_commandList.Get(), *uiCam);
 	if (_uiRenderItems.size() > 0)
 	{
-		DrawUI(_commandList.Get());
+		drawCallCount += DrawUI(_commandList.Get());
 	}
 
 	_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -173,6 +177,8 @@ void BrickRenderer::Draw(const GameTimer& gt)
 
 	_currentFrameResource->fence = ++_currentFence;
 	_commandQueue->Signal(_fence.Get(), _currentFence);
+
+	return drawCallCount;
 }
 
 void BrickRenderer::DrawBricks(ID3D12GraphicsCommandList* cmdList)

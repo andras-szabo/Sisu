@@ -44,7 +44,7 @@ public:
 protected:
 	virtual void OnResize();
 	virtual void Update();
-	virtual void Draw();
+	virtual std::size_t Draw();	// return the number of draw calls
 	virtual void PostDraw();
 
 	bool InitArenas();
@@ -60,7 +60,7 @@ protected:
 						ICameraService* const camService, IRenderer* const renderer);
 
 	bool InitTransformUpdateSystem();
-	void CalculateFrameStats();
+	void CalculateFrameStats(std::size_t drawCallCount);
 
 protected:
 	HINSTANCE _hAppInstance = nullptr;

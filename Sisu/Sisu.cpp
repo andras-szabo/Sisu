@@ -155,9 +155,9 @@ int SisuApp::Run()
 			_gameTimer->Tick();
 			if (!_gameTimer->IsPaused())
 			{
-				CalculateFrameStats();
 				Update();
-				Draw();
+				auto drawCallCount = Draw();
+				CalculateFrameStats(drawCallCount);
 				PostDraw();	//TODO better name
 			}
 			else
@@ -206,9 +206,9 @@ void SisuApp::Update()
 	}
 }
 
-void SisuApp::Draw()
+std::size_t SisuApp::Draw()
 {
-	_renderer->Draw(*_gameTimer.get());
+	return _renderer->Draw(*_gameTimer.get());
 }
 
 void SisuApp::PostDraw()
@@ -235,7 +235,7 @@ void SisuApp::OnResize()
 	}
 }
 
-void SisuApp::CalculateFrameStats()
+void SisuApp::CalculateFrameStats(std::size_t drawCallCount)
 {
 	static int frameCount = 0;
 	static float elapsedTime = 0.0f;
@@ -247,7 +247,8 @@ void SisuApp::CalculateFrameStats()
 		auto msPerFrame = 1000.0f / fps;
 		auto fpsAsString = std::to_wstring(fps);
 		auto msPerFrameAsString = std::to_wstring(msPerFrame);
-		_windowManager->SetText(L"      fps: " + fpsAsString + L"    ms/frame: " + msPerFrameAsString);
+		auto drawCallsAsString = std::to_wstring(drawCallCount);
+		_windowManager->SetText(L"      fps: " + fpsAsString + L"    ms/frame: " + msPerFrameAsString + L"     draw calls: " + drawCallsAsString);
 
 		frameCount = 0;
 		elapsedTime += 1.0f;

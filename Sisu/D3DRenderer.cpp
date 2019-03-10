@@ -682,8 +682,10 @@ void D3DRenderer::UpdateUIInstanceData()
 }
 
 //TODO: cmdList instead of _commandList
-void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
+std::size_t D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 {
+	static std::size_t drawCallCount;
+	drawCallCount = 0;
 	cmdList->SetPipelineState(_uiPSO.Get());
 	_commandList->SetGraphicsRootSignature(_uiRootSignature.Get());
 
@@ -711,16 +713,18 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 
 	_commandList->SetGraphicsRootDescriptorTable(2, tex);				// 2-> texture
 	//endregion
+
+	const auto& uiRenderItem = _uiRenderItems[0];
+
+	_commandList->IASetVertexBuffers(0, 1, &uiRenderItem.Geo->GetVertexBufferView());
+	_commandList->IASetIndexBuffer(&uiRenderItem.Geo->GetIndexBufferView());
+	_commandList->IASetPrimitiveTopology(uiRenderItem.PrimitiveType);
+	auto perPassOffset = FrameResourceCount;
+	auto perFrameOffset = MaxUIObjectCount * _currentFrameResourceIndex;
+
 	for (const auto& uiRenderItem : _uiRenderItems)
 	{
-		_commandList->IASetVertexBuffers(0, 1, &uiRenderItem.Geo->GetVertexBufferView());
-		_commandList->IASetIndexBuffer(&uiRenderItem.Geo->GetIndexBufferView());
-		_commandList->IASetPrimitiveTopology(uiRenderItem.PrimitiveType);
-
 		auto objectCBVindex = uiRenderItem.GetCBVIndex();
-		auto perPassOffset = FrameResourceCount;
-		auto perFrameOffset = MaxUIObjectCount * _currentFrameResourceIndex;
-
 		auto cbvIndex = MaxTextureCount + perPassOffset + perFrameOffset + objectCBVindex;
 		auto cbvHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_uiHeap->GetGPUDescriptorHandleForHeapStart());
 		cbvHandle.Offset(cbvIndex, _CbvSrvUavDescriptorSize);
@@ -728,7 +732,10 @@ void D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 		_commandList->SetGraphicsRootDescriptorTable(1, cbvHandle);			// 1-> per object stuff
 		_commandList->DrawIndexedInstanced(uiRenderItem.IndexCount, 1, uiRenderItem.StartIndexLocation,
 										   uiRenderItem.BaseVertexLocation, 0);
+		drawCallCount++;
 	}
+
+	return drawCallCount;
 }
 
 void D3DRenderer::WaitForNextFrameResource()

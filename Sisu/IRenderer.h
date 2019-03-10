@@ -21,7 +21,7 @@ struct IRenderer
 	virtual bool Init() = 0;
 	virtual void OnResize() = 0;
 	virtual void Update(const GameTimer& gt) = 0;
-	virtual void Draw(const GameTimer& gt) = 0;
+	virtual std::size_t Draw(const GameTimer& gt) = 0;
 	virtual void SetDirty() = 0;
 	virtual void SetWireframe(bool state) = 0;
 

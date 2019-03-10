@@ -33,7 +33,7 @@ public:
 	virtual bool Init() override;
 	virtual void SetDirty() override { _dirtyFrameCount = FrameResourceCount; }
 	virtual void Update(const GameTimer& gt) override;
-	virtual void Draw(const GameTimer& gt) override;
+	virtual std::size_t Draw(const GameTimer& gt) override;
 	virtual void SetWireframe(bool state) override { _isWireframe = state; }
 
 private:

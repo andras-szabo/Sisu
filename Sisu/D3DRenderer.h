@@ -88,7 +88,7 @@ protected:
 	
 	void UpdateUIPassBuffer(const GameTimer& gt, const D3DCamera& uiCamera);
 	void UpdateUIInstanceData();
-	void DrawUI(ID3D12GraphicsCommandList* cmdList);
+	std::size_t DrawUI(ID3D12GraphicsCommandList* cmdList);
 	void WaitForNextFrameResource();
 
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 1> GetStaticSamplers() const;
