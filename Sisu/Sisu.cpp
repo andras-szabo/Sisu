@@ -184,7 +184,7 @@ void SisuApp::Update()
 	_renderer->SetWireframe(_inputService->GetKey(KeyCode::One));
 
 	//TODO - move to its proper lace
-	if (_inputService->GetKey(KeyCode::U) && _inputService->GetKeyDown(KeyCode::U))
+	if (_inputService->GetKeyDown(KeyCode::U))
 	{
 		auto x = rand() % 50 * 0.01f;
 		auto y = rand() % 50 * 0.01f;

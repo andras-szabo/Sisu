@@ -510,9 +510,11 @@ void D3DRenderer::Init_13_BuildUIPSO()
 	D3D12_RENDER_TARGET_BLEND_DESC bd;
 	bd.BlendEnable = true;
 	bd.LogicOpEnable = false;
+
 	bd.SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	bd.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	bd.BlendOp = D3D12_BLEND_OP_ADD;
+
 	bd.SrcBlendAlpha = D3D12_BLEND_ONE;
 	bd.DestBlendAlpha = D3D12_BLEND_ZERO;
 	bd.BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -524,6 +526,8 @@ void D3DRenderer::Init_13_BuildUIPSO()
 	uiPSOdesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	uiPSOdesc.BlendState.RenderTarget[0] = bd;
 	uiPSOdesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	uiPSOdesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
 	uiPSOdesc.SampleMask = UINT_MAX;
 	uiPSOdesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	uiPSOdesc.NumRenderTargets = 1;
