@@ -44,7 +44,7 @@ public:
 	{
 	}
 
-	virtual ~D3DRenderer()
+	virtual ~D3DRenderer() override
 	{
 		if (_d3dDevice != nullptr) { FlushCommandQueue(); }
 	}

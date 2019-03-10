@@ -18,6 +18,15 @@ struct Texture
 class TextureManager
 {
 public:
+	~TextureManager()
+	{
+		for (auto& kvPair : _map)
+		{
+			kvPair.second->resource.Reset();
+			kvPair.second->uploadHeap.Reset();
+		}
+	}
+
 	TextureManager(IRenderer* renderer) : _renderer(renderer) {}
 	void LoadFromFile(const std::string& name, const std::wstring& fileName);
 	Texture* Get(const std::string& name);

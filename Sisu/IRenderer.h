@@ -10,6 +10,8 @@ struct UIElement;
 
 struct IRenderer
 {
+	virtual ~IRenderer() {};
+
 	virtual ID3D12Device* GetDevice() = 0;
 	virtual ID3D12GraphicsCommandList* GetCommandList() = 0;
 	virtual Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetTextureHeap() = 0;

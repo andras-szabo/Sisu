@@ -8,6 +8,8 @@ class GameTimer;
 class IGUIService
 {
 public:
+	virtual ~IGUIService() {}
+
 	virtual void OnResize() = 0;
 	virtual void Update(const GameTimer& gt) = 0;
 

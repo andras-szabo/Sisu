@@ -7,6 +7,8 @@ class GameTimer;
 class ICameraService
 {
 public:
+	virtual ~ICameraService() {}
+
 	virtual D3DCamera* GetActiveCamera() = 0;
 	virtual D3DCamera* GetGUICamera() = 0;
 	virtual void Update(const GameTimer& gt) = 0;

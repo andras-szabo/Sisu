@@ -20,6 +20,8 @@ enum class KeyCode : WPARAM
 class IInputService
 {
 public:
+	virtual ~IInputService() {}
+
 	struct Point
 	{
 		Point() : x(0.0f), y(0.0f) {}
