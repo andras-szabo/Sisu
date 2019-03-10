@@ -6,6 +6,7 @@ struct UIRenderItem
 {
 	UIRenderItem() = default;
 	DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4 uvData = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 
 	//TODO = NumFramesDirty should equal to renderer's FrameResourceCount,
 	//		 but FFS dependencies

@@ -615,7 +615,10 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGrid(float width, float dep
 	return meshData;
 }
 
-GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float depth)
+GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float x, float y, 
+														  float w, float h, float depth,
+														  float uStart, float vStart,
+														  float uSize, float vSize)
 {
 	MeshData meshData;
 
@@ -627,25 +630,25 @@ GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float x, float y, floa
 		x, y + h, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f);
+		uStart, vStart + vSize);
 
 	meshData.Vertices[1] = Vertex(
 		x, y, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f);
+		uStart, vStart);
 
 	meshData.Vertices[2] = Vertex(
 		x + w, y, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f);
+		uStart + uSize, vStart);
 
 	meshData.Vertices[3] = Vertex(
 		x + w, y + h, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f);
+		uStart + uSize, vStart + vSize);
 
 	meshData.Indices32[0] = 0;
 	meshData.Indices32[1] = 1;

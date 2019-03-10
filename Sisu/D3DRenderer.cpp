@@ -445,6 +445,7 @@ std::size_t D3DRenderer::AddUIRenderItem(const UIElement& ui)
 		 ui.position.x, ui.position.y,	0.0f, 1.0f);
 
 	DirectX::XMStoreFloat4x4(&quad.World, DirectX::XMLoadFloat4x4(&xm));
+	quad.uvData = DirectX::XMFLOAT4(ui.uvData.x, ui.uvData.y, ui.uvData.z, ui.uvData.w);
 
 	quad.Geo = _geometries["shapeGeo"].get();
 	quad.PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -500,8 +501,8 @@ void D3DRenderer::Init_12_BuildUIInputLayout()
 
 void D3DRenderer::Init_14_BuildUITextures()
 {
-	_textureManager->LoadFromFile("testTexture", L"Resources/Textures/testTexture.dds");
-	_textureManager->UploadToHeap("testTexture");
+	_textureManager->LoadFromFile("courier", L"Resources/Textures/font_courier_texture.dds");
+	_textureManager->UploadToHeap("courier");
 }
 
 void D3DRenderer::Init_13_BuildUIPSO()
@@ -673,7 +674,7 @@ void D3DRenderer::UpdateUIInstanceData()
 		if (uiRenderItem.NumFramesDirty > 0)
 		{
 			DirectX::XMMATRIX worldMatrix = DirectX::XMLoadFloat4x4(&uiRenderItem.World);
-			UIObjectConstants objConstants(worldMatrix);
+			UIObjectConstants objConstants(worldMatrix, uiRenderItem.uvData);
 			currentInstanceBuffer->CopyData(uiRenderItem.GetCBVIndex(), objConstants);
 			uiRenderItem.NumFramesDirty--;
 		}

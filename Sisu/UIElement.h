@@ -28,6 +28,7 @@ struct UIElement
 	std::size_t renderItemIndex = 0;
 	Sisu::Vector3 position;
 	Sisu::Vector3 scale;
+	Sisu::Vector4 uvData;
 
 private:
 	Sisu::Vector3 _pixelPosition;

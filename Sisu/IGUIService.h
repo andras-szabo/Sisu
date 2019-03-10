@@ -15,4 +15,5 @@ public:
 
 	//For testing
 	virtual std::size_t CreateUIElement(Sisu::Vector3 position, Sisu::Vector3 localScale) = 0;
+	virtual std::size_t CreateLetter(char character, Sisu::Vector3 position, Sisu::Vector3 localScale) = 0;
 };

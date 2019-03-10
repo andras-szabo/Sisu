@@ -172,6 +172,9 @@ int SisuApp::Run()
 
 void SisuApp::Update()
 {
+	const static std::string testText = "Hello, world! :)";
+	static std::size_t charIndex = 0;
+
 	const auto& gt = *_gameTimer;
 	auto hasSomethingChanged = _transformUpdateSystem->Update(gt, *_gameObjects);
 
@@ -183,15 +186,23 @@ void SisuApp::Update()
 	_renderer->Update(gt);
 	_renderer->SetWireframe(_inputService->GetKey(KeyCode::One));
 
-	//TODO - move to its proper lace
+	//TODO - move to its proper place
 	if (_inputService->GetKeyDown(KeyCode::U))
 	{
 		auto x = rand() % 50 * 0.01f;
 		auto y = rand() % 50 * 0.01f;
-		auto w = rand() % 50 * 0.01f; if (w <= 0.0f) { w = 0.1f; }
-		auto h = rand() % 50 * 0.01f; if (h <= 0.0f) { h = 0.1f; }
+		auto w = 0.25f;
+		auto h = 0.05f;
 
-		_gui->CreateUIElement(Sisu::Vector3(x, y, 0.0f), Sisu::Vector3(w, h, 1.0f));
+		for (int i = 0; i < testText.size(); ++i)
+		{
+			_gui->CreateLetter(testText[i], 
+							   Sisu::Vector3(x + (w / testText.size() * i), y, 0.0f),
+							   Sisu::Vector3(w / testText.size(), h, 1.0f));
+		}
+
+		//_gui->CreateLetter(testText[charIndex++], Sisu::Vector3(x, y, 0.0f), Sisu::Vector3(w, h, 1.0f));
+		//_gui->CreateUIElement(Sisu::Vector3(x, y, 0.0f), Sisu::Vector3(w, h, 1.0f));
 	}
 }
 

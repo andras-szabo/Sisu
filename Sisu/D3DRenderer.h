@@ -33,7 +33,7 @@ public:
 	static const int SwapChainBufferCount = 2;
 	static const int FrameResourceCount = 3;
 	static const int MaxTextureCount = 128;
-	static const UINT MaxUIObjectCount = 128;
+	static const UINT MaxUIObjectCount = 1024;
 
 	D3DRenderer(WindowManager* const windowManager, 
 				GameTimer* const gameTimer, 

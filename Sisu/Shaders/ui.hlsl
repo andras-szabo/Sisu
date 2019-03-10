@@ -1,6 +1,7 @@
 cbuffer cbPerObject : register(b1)
 {
 	float4x4 gWorld; 
+	float4 gUV;
 };
 
 cbuffer cbPass : register(b0)
@@ -43,8 +44,7 @@ VertexOut VS(VertexIn vin)
 	// Transform to homogeneous clip space.
     float4 posW = mul(float4(vin.PosL, 1.0f), gWorld);
 	vout.PosH = mul(posW, gViewProj);
-	vout.TexC = vin.PosUV;
-
+	vout.TexC = gUV.xy + (gUV.zw * vin.PosUV);
     return vout;
 }
 

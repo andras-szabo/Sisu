@@ -35,6 +35,7 @@ public:
 	virtual void OnResize() override;
 	virtual void Update(const GameTimer& gt) override;
 	virtual std::size_t CreateUIElement(Sisu::Vector3 position, Sisu::Vector3 localScale) override;
+	virtual std::size_t CreateLetter(char character, Sisu::Vector3 position, Sisu::Vector3 localScale) override;
 
 private:
 	IInputService* const _inputService;

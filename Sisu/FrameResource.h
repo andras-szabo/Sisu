@@ -3,6 +3,7 @@
 #include "d3dUtil.h"
 #include "MathHelper.h"
 #include "UploadBuffer.h"
+#include "SisuUtilities.h"
 
 struct FRObjectConstants
 {
@@ -23,12 +24,15 @@ struct FRObjectConstants
 
 struct UIObjectConstants
 {
-	UIObjectConstants(const DirectX::XMMATRIX& worldMatrixToInit)
+	UIObjectConstants(const DirectX::XMMATRIX& worldMatrixToInit,
+					  DirectX::XMFLOAT4 uvData)
 	{
 		DirectX::XMStoreFloat4x4(&worldMatrix, DirectX::XMMatrixTranspose(worldMatrixToInit));
+		uvOffset = uvData;
 	}
 
 	DirectX::XMFLOAT4X4 worldMatrix = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4 uvOffset = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 };
 
 struct PassConstants
