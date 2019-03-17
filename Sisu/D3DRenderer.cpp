@@ -386,9 +386,16 @@ void D3DRenderer::Init_10_BuildUIRootSignature()
 	cbvTablePerPass.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);		// per pass to register 0
 	slotRootParams[0].InitAsDescriptorTable(1, &cbvTablePerPass);
 
+	// For drawing instanced UI:
+	slotRootParams[1].InitAsShaderResourceView(0, 1);		// per instance data to shader register 0 in
+															// reguster space 1, so as not to overlap
+															// with textures in register space 0.
+
+	/* If we used constant buffers:
 	CD3DX12_DESCRIPTOR_RANGE cbvTablePerObject;
 	cbvTablePerObject.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);		// per object to register 1
 	slotRootParams[1].InitAsDescriptorTable(1, &cbvTablePerObject);
+	*/
 
 	CD3DX12_DESCRIPTOR_RANGE srvTable;									// srv for teh texture to tex register 0
 	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
@@ -432,6 +439,8 @@ void D3DRenderer::RefreshUIItem(const UIElement& ui)
 
 	DirectX::XMStoreFloat4x4(&renderItem.World, DirectX::XMLoadFloat4x4(&xm));
 	renderItem.NumFramesDirty = FrameResourceCount;
+
+	_UIDirtyFrameCount = FrameResourceCount;
 }
 
 std::size_t D3DRenderer::AddUIRenderItem(const UIElement& ui)
@@ -474,13 +483,15 @@ std::size_t D3DRenderer::AddUIRenderItem(const UIElement& ui)
 		_uiRenderItems.push_back(quad);
 	}
 
+	_UIDirtyFrameCount = FrameResourceCount;
+
 	return uiRenderItemCBVIndex;
 }
 
 void D3DRenderer::Init_12_BuildUIInputLayout()
 {
-	_uiShaders["VS"] = d3dUtil::CompileShader(L"Shaders\\ui.hlsl", nullptr, "VS", "vs_5_1");
-	_uiShaders["PS"] = d3dUtil::CompileShader(L"Shaders\\ui.hlsl", nullptr, "PS", "ps_5_1");
+	_uiShaders["instancedVS"] = d3dUtil::CompileShader(L"Shaders\\ui_instanced.hlsl", nullptr, "VS", "vs_5_1");
+	_uiShaders["instancedPS"] = d3dUtil::CompileShader(L"Shaders\\ui_instanced.hlsl", nullptr, "PS", "ps_5_1");
 
 	// _inputLayout is a std::vector<D3D12_INPUT_ELEMENT_DESC>; signature:
 	// semantic name, semantic index, format, input slot, aligned byte offset, input slot class, instance data step rate 
@@ -514,14 +525,14 @@ void D3DRenderer::Init_13_BuildUIPSO()
 	uiPSOdesc.pRootSignature = _uiRootSignature.Get();
 	uiPSOdesc.VS =
 	{
-		reinterpret_cast<BYTE*>(_uiShaders["VS"]->GetBufferPointer()),
-		_uiShaders["VS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(_uiShaders["instancedVS"]->GetBufferPointer()),
+		_uiShaders["instancedVS"]->GetBufferSize()
 	};
 
 	uiPSOdesc.PS =
 	{
-		reinterpret_cast<BYTE*>(_uiShaders["PS"]->GetBufferPointer()),
-		_uiShaders["PS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(_uiShaders["instancedPS"]->GetBufferPointer()),
+		_uiShaders["instancedPS"]->GetBufferSize()
 	};
 	
 	D3D12_RENDER_TARGET_BLEND_DESC bd;
@@ -667,6 +678,22 @@ void D3DRenderer::UpdateUIPassBuffer(const GameTimer& gt, const D3DCamera& uiCam
 
 void D3DRenderer::UpdateUIInstanceData()
 {
+	if (_UIDirtyFrameCount > 0)
+	{
+		auto currentInstanceBuffer = _currentFrameResource->UIInstanceBuffer.get();
+		UINT bufferIndex = 0;
+		for (auto& uiRenderItem : _uiRenderItems)
+		{
+			DirectX::XMMATRIX worldMatrix = DirectX::XMLoadFloat4x4(&uiRenderItem.World);
+			UIObjectConstants objConstants(worldMatrix, uiRenderItem.uvData);
+			currentInstanceBuffer->CopyData(bufferIndex++, objConstants);
+		}
+
+		_UIDirtyFrameCount--;
+		_drawableUIItemCount = bufferIndex;
+	}
+
+	/* If we were using constant buffers:
 	auto currentInstanceBuffer = _currentFrameResource->UIObjectConstantBuffer.get();
 
 	for (auto& uiRenderItem : _uiRenderItems)
@@ -679,6 +706,7 @@ void D3DRenderer::UpdateUIInstanceData()
 			uiRenderItem.NumFramesDirty--;
 		}
 	}
+	*/
 }
 
 //TODO: cmdList instead of _commandList
@@ -715,13 +743,20 @@ std::size_t D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 	//endregion
 
 	const auto& uiRenderItem = _uiRenderItems[0];
+	auto buffer = _currentFrameResource->UIInstanceBuffer->Resource();
 
 	_commandList->IASetVertexBuffers(0, 1, &uiRenderItem.Geo->GetVertexBufferView());
 	_commandList->IASetIndexBuffer(&uiRenderItem.Geo->GetIndexBufferView());
 	_commandList->IASetPrimitiveTopology(uiRenderItem.PrimitiveType);
+	_commandList->SetGraphicsRootShaderResourceView(1, buffer->GetGPUVirtualAddress());
+	_commandList->DrawIndexedInstanced(uiRenderItem.IndexCount, _drawableUIItemCount,
+		uiRenderItem.StartIndexLocation, uiRenderItem.BaseVertexLocation, 0);
+
+	drawCallCount++;
+
+	/* If we were to use constant buffers:
 	auto perPassOffset = FrameResourceCount;
 	auto perFrameOffset = MaxUIObjectCount * _currentFrameResourceIndex;
-
 	for (const auto& uiRenderItem : _uiRenderItems)
 	{
 		auto objectCBVindex = uiRenderItem.GetCBVIndex();
@@ -733,7 +768,7 @@ std::size_t D3DRenderer::DrawUI(ID3D12GraphicsCommandList* cmdList)
 		_commandList->DrawIndexedInstanced(uiRenderItem.IndexCount, 1, uiRenderItem.StartIndexLocation,
 										   uiRenderItem.BaseVertexLocation, 0);
 		drawCallCount++;
-	}
+	}*/
 
 	return drawCallCount;
 }

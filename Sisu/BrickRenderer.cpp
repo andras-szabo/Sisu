@@ -222,7 +222,7 @@ void BrickRenderer::BuildRootSignatures()
 	CD3DX12_ROOT_PARAMETER slotRootParams[2];
 	slotRootParams[0].InitAsDescriptorTable(1, &cbvTablePerPass);
 	slotRootParams[1].InitAsShaderResourceView(0);					// register space t0, 
-																	// becasue there's nothing to overlap with
+																	// because there's nothing to overlap with
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParams, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 	ComPtr<ID3DBlob> serializedRS = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;

@@ -65,20 +65,20 @@ struct FrameResource
 			IID_PPV_ARGS(commandAllocator.GetAddressOf()))
 		);
 
+		// Create buffers for "normal" objects
 		// ddevice*, count, isConstantBuffer
 		passConstantBuffer = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
-		UIPassConstantBuffer = std::make_unique<UploadBuffer<PassConstants>>(device, 1, true);
-
-		// For now, let's just create 1 UI object
-		UIObjectConstantBuffer = std::make_unique<UploadBuffer<UIObjectConstants>>(device, maxUIObjectCount, true);
-
 		if (cbObjectCount > 0)
 		{
 			objectConstantBuffer = std::make_unique<UploadBuffer<FRObjectConstants>>(device, cbObjectCount, true);
 		}
-
 		instanceBuffer = std::make_unique<UploadBuffer<FRObjectConstants>>(device, maxInstancedObjectCount, false);
-	}
+
+		// Create buffers for UI
+		UIPassConstantBuffer = std::make_unique<UploadBuffer<PassConstants>>(device, 1, true);
+		UIObjectConstantBuffer = std::make_unique<UploadBuffer<UIObjectConstants>>(device, maxUIObjectCount, true);
+		UIInstanceBuffer = std::make_unique<UploadBuffer<UIObjectConstants>>(device, maxUIObjectCount, false);
+}
 
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
@@ -109,6 +109,7 @@ public:
 
 	std::unique_ptr<UploadBuffer<PassConstants>> UIPassConstantBuffer = nullptr;
 	std::unique_ptr<UploadBuffer<UIObjectConstants>> UIObjectConstantBuffer = nullptr;
+	std::unique_ptr<UploadBuffer<UIObjectConstants>> UIInstanceBuffer = nullptr;
 
 	UINT64 fence = 0;
 

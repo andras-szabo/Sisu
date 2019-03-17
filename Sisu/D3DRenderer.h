@@ -132,6 +132,8 @@ protected:
 	std::vector<UIRenderItem> _uiRenderItems;
 	std::stack<std::size_t> _freeUIRenderItemIndices;
 	PassConstants _uiPassConstants;
+	UINT _UIDirtyFrameCount = FrameResourceCount;
+	UINT _drawableUIItemCount = 0;
 
 	UINT _RtvDescriptorSize = 0;			// render target descriptor size
 	UINT _DsvDescriptorSize = 0;			// depth and stencil buffer descriptor size
